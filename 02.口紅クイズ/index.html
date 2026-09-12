@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Causette.Joli 商品名クイズ</title>
+<title>FRANGES DIVINES 色名クイズ</title>
 <style>
   :root{
     --bg:#faf5f2;
@@ -122,12 +122,17 @@
   }
   .photo img{width:100%;height:100%;object-fit:cover;display:block}
   .photo .err{font-size:13px;color:var(--ink-soft);padding:20px;text-align:center}
-  /* 商品名マスク：ラベル下部の【】キーワード部分だけ白塗りで隠す（回答前のみ） */
-  .name-mask{
+  /* 商品コードバッジ：写真右上に表示するヒント（回答前後とも常時表示） */
+  .code-badge{
     position:absolute;
-    left:34%; width:32%;
-    top:59%; height:12%;
-    background:#fff;
+    top:8px; right:8px;
+    background:rgba(59,51,58,.82);
+    color:#fff;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.03em;
+    padding:4px 10px;
+    border-radius:999px;
     pointer-events:none;
   }
   .q-hint{text-align:center;font-size:13px;color:var(--ink-soft);margin:6px 0 6px}
@@ -184,6 +189,7 @@
     height:min(calc(100vw - 40px), calc(100vh - 40px));
   }
   .zoom-inner img{width:100%;height:100%;object-fit:contain;border-radius:12px;display:block}
+  .zoom-inner .code-badge{top:12px;right:12px;font-size:16px;padding:6px 14px}
 
   .foot{margin-top:22px;text-align:center;font-size:11px;color:var(--ink-soft);letter-spacing:.03em}
   .switch-link{display:block;text-align:center;margin-top:10px;font-size:12px;color:var(--accent);text-decoration:none}
@@ -194,8 +200,8 @@
 
   <!-- ===== LOCK ===== -->
   <section id="screen-lock" class="screen">
-    <div class="brand">Causette.Joli</div>
-    <h1>商品名クイズ</h1>
+    <div class="brand">FRANGES DIVINES</div>
+    <h1>色名クイズ</h1>
     <p class="lead">合言葉を入力してください。</p>
     <div class="card">
       <input type="password" class="text-input" id="lock-input" placeholder="合言葉" autocomplete="off">
@@ -206,9 +212,9 @@
 
   <!-- ===== START ===== -->
   <section id="screen-start" class="screen hidden">
-    <div class="brand">Causette.Joli</div>
-    <h1>商品名クイズ</h1>
-    <p class="lead">写真を見て、Coeur de Fleur Nail Color の商品名（【 】内）を4択で当てる練習です。新人研修用のテスト。</p>
+    <div class="brand">FRANGES DIVINES</div>
+    <h1>色名クイズ</h1>
+    <p class="lead">写真右上のコード（例:A6）を見て、ルージュ ウーフォリ ドゥ ラ ソワ の色名を4択で当てる練習です。新人研修用のテスト。</p>
     <div class="card">
       <div class="field-label">出題数</div>
       <div class="seg" id="seg-count">
@@ -219,7 +225,7 @@
       <button class="btn" id="btn-start">はじめる</button>
       <div class="best" id="best-line"></div>
     </div>
-    <div class="foot">画像は causettejoli.jp から読み込みます（要ネット接続）</div>
+    <div class="foot">画像は f-divines.com から読み込みます（要ネット接続）</div>
     <a class="switch-link" href="../index.html">← 別のクイズを選ぶ</a>
   </section>
 
@@ -240,7 +246,7 @@
     <div class="bar"><i id="q-bar" style="width:0%"></i></div>
 
     <div class="photo" id="q-photo" role="img" aria-label="商品写真"></div>
-    <div class="q-hint">この商品名は？（タップで画像拡大）</div>
+    <div class="q-hint">このコードの色名は？（タップで画像拡大）</div>
 
     <div class="choices" id="q-choices"></div>
 
@@ -265,69 +271,65 @@
 </div>
 
 <script>
-/* ---------- 商品データ（Coeur de Fleur Nail Color 系 43点） ---------- */
-const IMG_BASE = "https://makeshop-multi-images.akamaized.net/cjms/itemimages/";
+/* ---------- 商品データ（ルージュ ウーフォリ ドゥ ラ ソワ 系 40点） ---------- */
+const IMG_BASE = "https://f-divines.com/cdn/shop/files/";
 const RAW = [
-  ["KUZUNOHANA ISAMU","000000000216_DhS8Mee.jpg","normal"],
-  ["ENOKOROGUSA MEZURU","000000000215_pIQJSyn.jpg","normal"],
-  ["MIZUKAZURA KIKAN","000000000213_dRuM9PB.jpg","shunkan"],
-  ["HIZAKARI GAJUN","000000000208_NoGDYFE.jpg","normal"],
-  ["KOSHITAYAMI SHOUSHA","000000000209_y48AnY1.jpg","normal"],
-  ["HOOZUKI ITOOSHI","000000000210_qb5sH2x.jpg","normal"],
-  ["GAKUAJISAI BIBISHI 26","000000000205_pASJOBD.jpg","normal"],
-  ["NAEBANOSORA 26 SHUGYOKU","000000000204_cjm2lgW.jpg","normal"],
-  ["KUROYURI BIKI","000000000194_urrFaAB.jpg","normal"],
-  ["HANAKINPOUGE USUGUMO","000000000183_Gz8VmSS.jpg","beni"],
-  ["TENJIKUBOTAN OBOROZUKUYO","000000000182_hRPfYCk.jpg","beni"],
-  ["BARA USUZUKU","000000000181_Z7yiIZ7.jpg","beni"],
-  ["TENJIKUAOI NANATSUBOSHI","000000000180_3AYs2SU.jpg","beni"],
-  ["ITESORA TAIKAN","000000000176_XwUcehH.jpg","shunkan"],
-  ["NEKOYANAGI KIYORA","000000000033_MAi7DJ2.jpg","normal"],
-  ["KONOHA SHIORASHI","000000000032_2nCXaTt.jpg","normal"],
-  ["KONAYUKI KIRAYAKA","000000000034_W5Zj2Cv.jpg","normal"],
-  ["HIIRAGI DATESUGATA","000000000035_dsVAqui.jpg","normal"],
-  ["SHIINOMI TAOYAME","000000000029_0BggiJp.jpg","normal"],
-  ["MOMIJITSUTA SEIEN","000000000030_mLGfjku.jpg","normal"],
-  ["KOSUMOSU SENSEN","000000000031_ZQp37qV.jpg","normal"],
-  ["KINMOKUSEI KAZENOSUGATA","000000000028_wxxGBKf.jpg","normal"],
-  ["SARUSUBERI NATSUSUGATA","000000000010_1SZNQlU.jpg","normal"],
-  ["NATSUSORA ENTEN","000000000011_i9bhOQK.jpg","normal"],
-  ["NATSUKUMO EIEI","000000000012_GDmWq3r.jpg","normal"],
-  ["HIMAWARI OMOISOMERU","000000000013_SGOZnrg.jpg","normal"],
-  ["TSUKUSHINBO TENREI","000000000047_Kdc1V4p.jpg","normal"],
-  ["SHIBAZAKURA KAREN","000000000045_rxYvEyg.jpg","normal"],
-  ["RURIKARAKUSA ENZEN","000000000044_nwtL70q.jpg","normal"],
-  ["HANAMIZUKI ZENBI","000000000046_znNhYiK.jpg","normal"],
-  ["WATAHANASHIBE SHITOYAKA","000000000009_S8ATIOm.jpg","normal"],
-  ["SHAKUYAKU TANREI","000000000005_sur5rDo.jpg","normal"],
-  ["SAKURA SOSO","000000000007_fSSE2dn.jpg","normal"],
-  ["NADESHIKO YASASUGATA","000000000004_hG2JmHK.jpg","normal"],
-  ["MOMO URUWASHI","000000000003_OJVMiAG.jpg","normal"],
-  ["KOUBAI YUUGA","000000000001_RPqhN9W.jpg","normal"],
-  ["KOBUSHI KIYORAKA","000000000008_pnYQxcn.jpg","normal"],
-  ["HAGI TAOYAKA","000000000006_9kkmOWf.jpg","normal"],
-  ["BOTAN ADEYAKA","000000000002_ukbBpLN.jpg","normal"],
-  ["TSURARA IKAN","000000000103_kuq4CL3.jpg","shunkan"],
-  ["KUSATSUYU FUUSHU","000000000102_CRvMNlQ.jpg","shunkan"],
-  ["SEIRAN YASHU","000000000101_zCFdyLA.jpg","shunkan"],
-  ["SAMIDARE ENKA","000000000100_6Y66L1F.jpg","shunkan"],
+  ["A1","月の霜","TSUKI NO SHIMO","Ⅱ","fdlip_wholeA1.jpg"],
+  ["A2","三五の月","SANGO NO TSUKI","Ⅲ","fdlip_wholeA2_faf929b5-4146-473c-81b6-2c5e86780029.jpg"],
+  ["A3","八重雲","YAEGUMO","Ⅲ","fdlip_wholeA3_84a92491-645c-445f-b6e4-a9abe40e006a.jpg"],
+  ["A4","七星","NANATSUBOSHI","Ⅲ","fdlip_wholeA4_f49dc1cf-e777-4fe9-b5a9-31f3c8e15c41.jpg"],
+  ["A5","月人","TSUKIHITO","Ⅰ","fdlip_wholeA5-2.jpg"],
+  ["A6","月影","GETSUEI","Ⅰ","fdlip_wholeA6_85fd77b0-215c-463a-a71a-4ea23185f974.jpg"],
+  ["A7","夕影","YUUKAGE","Ⅲ","fdlip_wholeA7-2.jpg"],
+  ["A8","舂く","USUZUKU","Ⅱ","fdlip_wholeA8_c58d107c-1f52-45e7-99c1-0b4ef0e5d6f0.jpg"],
+  ["A9","朝日子","ASAHIKO","Ⅰ","fdlip_wholeA9_2a35c737-dae5-4fa3-9509-0fb6ecef93d1.jpg"],
+  ["A10","有明","ARIAKE","Ⅰ","fdlip_wholeA10_5712edf9-ecea-4454-9488-c1fce0a9b291.jpg"],
+  ["B1","月華","GEKKA","Ⅰ","fdlip_wholeB1_97b742f9-424d-4901-bd6e-fe8c39010585.jpg"],
+  ["B2","望月","MOCHIZUKI","Ⅰ","fdlip_wholeB2_7675c825-6680-422b-ba8d-d20273763057.jpg"],
+  ["B3","上露","UWATSUYU","Ⅰ","fdlip_wholeB3_0b4534bb-ac99-4b08-aab9-726bc5228a5a.jpg"],
+  ["B4","天霧る","AMAGIRU","Ⅲ","fdlip_wholeB4_f226fe6e-dfc9-4f5f-8c3b-ecaab184d046.jpg"],
+  ["B5","水無川","MINASHIGAWA","Ⅱ","fdlip_wholeB5_fdb050cf-7a8c-4e11-a930-eeab84ff39c3.jpg"],
+  ["B6","霞","KASUMI","Ⅱ","fdlip_wholeB6_f557eea9-adf5-4613-89b4-5654448d827c.jpg"],
+  ["B7","露けし","TSUYUKESHI","Ⅱ","fdlip_wholeB7_9bb6e8c2-8ffc-4469-b163-3c4d91ad24a0.jpg"],
+  ["B8","彩雲","SAIUN","Ⅰ","fdlip_wholeB8_0e433d40-5226-4c58-879d-59ba74806d86.jpg"],
+  ["B9","明星","AKABOSHI","Ⅱ","fdlip_wholeB9_3393c628-3d96-4eb4-a58e-e247448f8008.jpg"],
+  ["B10","野馬","YABA","Ⅰ","fdlip_wholeB10_78a06498-73ad-4a64-ad94-82ee71404168.jpg"],
+  ["C1","日影","HIKAGE","Ⅱ","fdlip_wholeC1_b844898f-49ac-4541-a7c8-cd6b0960c47e.jpg"],
+  ["C2","下照る","SHITADERU","Ⅰ","fdlip_wholeC2_172552bf-5f00-4158-9dae-a378683832a7.jpg"],
+  ["C3","夕星","YUUZUTSU","Ⅲ","fdlip_wholeC3_e8aa9889-7cbc-4956-bf8a-cf6c745a4e24.jpg"],
+  ["C4","星影","HOSHIKAGE","Ⅰ","fdlip_wholeC4_1c1b689c-dd0c-440b-821f-d2b2a46166f9.jpg"],
+  ["C5","霧","KI","Ⅰ","fdlip_wholeC5_83cc3fc9-3bce-42b9-bb3e-5ff03c886cb0.jpg"],
+  ["C6","月の船","TSUKI NO FUNE","Ⅰ","fdlip_wholeC6_88d2ea3b-9545-4765-aecb-8f6be67ba9bd.jpg"],
+  ["C7","雲間","KUMOMA","Ⅲ","fdlip_wholeC7-2.jpg"],
+  ["C8","夜半の月","YOWA NO TSUKI","Ⅲ","fdlip_wholeC8_cf0b5129-60c3-4967-b8b5-077799893b97.jpg"],
+  ["C9","弓張の月","YUMIHARI NO TSUKI","Ⅲ","fdlip_wholeC9_277d1606-bb2f-49a5-8e72-980af409bb39.jpg"],
+  ["C10","朧月夜","OBOROZUKUYO","Ⅱ","fdlip_wholeC10_5f99aaf3-f569-41f0-bb28-02b34939bb52.jpg"],
+  ["D1","清光","SEIKOU","Ⅰ","fdlip_wholeD1_4958464f-204c-4685-8457-c4e0e35a8d87.jpg"],
+  ["D2","白露","SHIRATSUYU","Ⅱ","fdlip_wholeD2_f526c632-a065-4766-a6f2-b9502acbf1e3.jpg"],
+  ["D3","旗雲","HATAGUMO","Ⅲ","fdlip_wholeD3_4cfca260-72d4-407d-9b76-3cf83969b824.jpg"],
+  ["D4","星合","HOSHIAI","Ⅲ","fdlip_wholeD4_bd173006-5c52-43e6-981c-951173049b11.jpg"],
+  ["D5","下露","SHITATSUYU","Ⅲ","fdlip_wholeD5_9a383f6f-8973-44a1-a0c5-07557b1574b7.jpg"],
+  ["D6","薄雲","USUGUMO","Ⅰ","fdlip_wholeD6_fe829e92-0d7e-4881-b98d-b6409f0674ff.jpg"],
+  ["D7","青雲","SEIUN","Ⅲ","fdlip_wholeD7_5b5029ce-0f7b-4bce-b810-90d734c5f410.jpg"],
+  ["D8","落星","OCHIBOSHI","Ⅱ","fdlip_wholeD8_fff86205-5864-4d23-82a5-757197867f53.jpg"],
+  ["D9","夕闇","YUUYAMI","Ⅲ","fdlip_wholeD9_bfaa634e-1707-41c2-9636-6738fe22def0.jpg"],
+  ["D10","暮雨の天","BOU NO TEN","Ⅱ","fdlip_wholeD10_4621c151-06d1-4610-8054-912495919144.jpg"],
 ];
-const PRODUCTS = RAW.map(([kw,img,series])=>({
-  kw,
-  img: IMG_BASE + img,
+const PRODUCTS = RAW.map(([code,kanji,romaji,series,img])=>({
+  code,
+  kanji,
+  romaji,
   series,
-  fullName: series==="beni"
-      ? `【${kw}】BENI Coeur de Fleur Nail Color`
-    : series==="shunkan"
-      ? `【${kw}】-SHUNKAN Series- Coeur de Fleur Nail Color`
-      : `【${kw}】Coeur de Fleur Nail Color`,
+  kw: `${kanji} ${romaji}`,
+  img: IMG_BASE + img,
+  fullName: `${code}　${kanji}${romaji}（${series}）`,
 }));
 
 /* ---------- 合言葉ロック ---------- */
 // パスワードそのものではなく SHA-256 ハッシュを埋め込んで比較する
 // （簡易的な鍵：ソースを見ても平文はわからないが、本物のサーバー認証ではない）
 const LOCK_HASH = "6a4a20a527695a2bc41d00d2143791c53384bddb290caa1cb26be5b1a4720c07";
-const LOCK_KEY = "cj_quiz_unlocked_v1";
+const LOCK_KEY = "fd_quiz_unlocked_v1";
 async function sha256Hex(text){
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
@@ -349,14 +351,14 @@ async function tryUnlock(){
 }
 
 /* ---------- 状態 ---------- */
-const BEST_KEY = "cj_quiz_best_v1";
+const BEST_KEY = "fd_quiz_best_v1";
 let usable = null;        // 画像読み込みに成功した商品
 let chosenCount = 10;     // 0 = 全部
 let quiz = [];            // 出題リスト
 let idx = 0;
 let score = 0;
 let missed = [];
-let answered = false;  // 現在の問題に回答済みか（true ならマスク解除でOK）
+let answered = false;  // 現在の問題に回答済みか
 
 /* ---------- ユーティリティ ---------- */
 const $ = (s)=>document.querySelector(s);
@@ -432,9 +434,10 @@ function renderQuestion(){
   im.onerror = ()=>{ photo.innerHTML = '<div class="err">画像を読み込めませんでした</div>'; };
   im.src = q.correct.img;
   photo.appendChild(im);
-  const mask = document.createElement("div");
-  mask.className = "name-mask";
-  photo.appendChild(mask);
+  const badge = document.createElement("div");
+  badge.className = "code-badge";
+  badge.textContent = q.correct.code;
+  photo.appendChild(badge);
 
   const wrap = $("#q-choices");
   wrap.innerHTML = "";
@@ -463,8 +466,6 @@ function answer(opt, btn){
   else { missed.push(q.correct); }
 
   answered = true;
-  const mask = $("#q-photo .name-mask");
-  if(mask) mask.classList.add("hidden");
 
   [...$("#q-choices").children].forEach(c=>{
     c.disabled = true;
@@ -542,11 +543,11 @@ $("#btn-start").addEventListener("click", async ()=>{
 
 /* ---------- 画像拡大 ---------- */
 $("#q-photo").addEventListener("click", ()=>{
-  const src = quiz[idx] && quiz[idx].correct.img;
-  if(!src) return;
+  const q = quiz[idx];
+  if(!q) return;
   const ov = document.createElement("div");
   ov.className = "zoom";
-  ov.innerHTML = `<div class="zoom-inner"><img src="${src}" alt="">${answered ? "" : '<div class="name-mask"></div>'}</div>`;
+  ov.innerHTML = `<div class="zoom-inner"><img src="${q.correct.img}" alt=""><div class="code-badge">${q.correct.code}</div></div>`;
   ov.addEventListener("click", ()=>ov.remove());
   document.body.appendChild(ov);
 });

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>商品名クイズ 選択</title>
+<style>
+  :root{
+    --bg:#faf5f2;
+    --card:#ffffff;
+    --ink:#3b333a;
+    --ink-soft:#8a7f85;
+    --line:#ece2dc;
+    --accent:#b47268;
+    --accent-soft:#f3e4e0;
+    --shadow:0 6px 24px rgba(90,60,55,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    line-height:1.6;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    min-height:100dvh;
+    padding:24px 18px calc(28px + env(safe-area-inset-bottom));
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .brand{
+    font-size:12px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:18px;
+  }
+  h1{
+    font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:.04em;
+    margin:0 0 4px;
+  }
+  .lead{color:var(--ink-soft);font-size:14px;margin:0 0 22px}
+  .quiz-link{
+    display:block;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    padding:20px 22px;
+    margin-bottom:14px;
+    text-decoration:none;
+    color:var(--ink);
+  }
+  .quiz-link .q-brand{
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:6px;
+  }
+  .quiz-link .q-title{
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+    font-size:19px;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  .quiz-link .q-desc{font-size:13px;color:var(--ink-soft)}
+  .quiz-link .q-arrow{
+    float:right;
+    color:var(--accent);
+    font-size:18px;
+  }
+  .foot{margin-top:8px;text-align:center;font-size:11px;color:var(--ink-soft);letter-spacing:.03em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">新人研修</div>
+  <h1>商品名クイズ</h1>
+  <p class="lead">どちらのクイズをやりますか？</p>
+
+  <a class="quiz-link" href="./01.マニキュアクイズ/index.html">
+    <span class="q-arrow">›</span>
+    <div class="q-brand">Causette.Joli</div>
+    <div class="q-title">マニキュアクイズ</div>
+    <div class="q-desc">写真の商品名（【 】内）を4択で当てる</div>
+  </a>
+
+  <a class="quiz-link" href="./02.口紅クイズ/index.html">
+    <span class="q-arrow">›</span>
+    <div class="q-brand">FRANGES DIVINES</div>
+    <div class="q-title">口紅クイズ</div>
+    <div class="q-desc">写真右上のコードから色名を4択で当てる</div>
+  </a>
+
+  <div class="foot">それぞれ合言葉の入力が必要です</div>
+</div>
+</body>
+</html>
