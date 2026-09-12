@@ -452,7 +452,7 @@ async function ensureImages(photoMode){
   show("loading");
   let done = 0;
   const results = await Promise.all(PRODUCTS.map(async p=>{
-    const urls = photoMode === "hard" ? p.swatchImgs : [p.img];
+    const urls = photoMode === "hard" ? [p.swatchImgs[0]] : [p.img];
     const oks = await Promise.all(urls.map(preloadUrl));
     done++; $("#load-count").textContent = `${done} / ${PRODUCTS.length}`;
     return { p, ok: oks.every(Boolean) };
@@ -512,7 +512,7 @@ function renderQuestion(){
   const photoRow = $("#q-photo-row");
   photoRow.innerHTML = "";
   if(photoModeFor(difficulty) === "hard"){
-    q.correct.swatchImgs.forEach(url=> photoRow.appendChild(makePhotoEl(url, null, true)));
+    photoRow.appendChild(makePhotoEl(q.correct.swatchImgs[0], null, false));
   } else {
     photoRow.appendChild(makePhotoEl(q.correct.img, q.correct.code, false));
   }
@@ -528,6 +528,7 @@ function renderQuestion(){
     input.value = "";
     input.disabled = false;
     input.classList.remove("correct","wrong");
+    $("#btn-submit-text").classList.remove("hidden");
     setTimeout(()=>input.focus(), 0);
   } else {
     const nameWrap = $("#q-choices");
@@ -625,6 +626,7 @@ function submitTextAnswer(){
 
   input.disabled = true;
   input.classList.add(correct ? "correct" : "wrong");
+  $("#btn-submit-text").classList.add("hidden");
 
   const fb = $("#q-feedback");
   fb.textContent = correct ? "正解！" : "不正解";
