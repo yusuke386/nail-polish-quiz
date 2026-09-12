@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>FRANGES DIVINES 色名クイズ</title>
+<title>FRANGES DIVINES 商品名クイズ</title>
 <style>
   :root{
     --bg:#faf5f2;
@@ -139,12 +139,17 @@
     pointer-events:none;
   }
   .q-hint{text-align:center;font-size:12px;color:var(--ink-soft);margin:5px 0 5px}
-  /* 色名（左）とシリーズ番号（右）を横並びにして、スマホでもスクロールなしで両方回答できるようにする */
+  /* 商品名（左）とシリーズ番号（右）を横並びにして、スマホでもスクロールなしで両方回答できるようにする */
   .answer-row{display:flex;gap:8px;align-items:flex-start}
   .col-name{flex:1 1 auto;min-width:0}
   .col-series{flex:0 0 64px}
   .col-label{font-size:11px;color:var(--ink-soft);margin-bottom:4px}
   .choices{display:flex;flex-direction:column;gap:5px}
+  .answer-text{margin-top:2px}
+  .answer-text .text-input{font-size:16px}
+  .answer-text .text-input.correct{border-color:var(--ok);background:var(--ok-soft)}
+  .answer-text .text-input.wrong{border-color:var(--ng);background:var(--ng-soft)}
+  .answer-text .btn{margin-top:8px}
   .choice{
     width:100%;text-align:left;
     padding:7px 10px;
@@ -214,7 +219,7 @@
   <!-- ===== LOCK ===== -->
   <section id="screen-lock" class="screen">
     <div class="brand">FRANGES DIVINES</div>
-    <h1>色名クイズ</h1>
+    <h1>商品名クイズ</h1>
     <p class="lead">合言葉を入力してください。</p>
     <div class="card">
       <input type="password" class="text-input" id="lock-input" placeholder="合言葉" autocomplete="off">
@@ -226,16 +231,17 @@
   <!-- ===== START ===== -->
   <section id="screen-start" class="screen hidden">
     <div class="brand">FRANGES DIVINES</div>
-    <h1>色名クイズ</h1>
-    <p class="lead">写真を見て、ルージュ ウーフォリ ドゥ ラ ソワ の色名とシリーズ番号を当てる練習です。新人研修用のテスト。</p>
+    <h1>商品名クイズ</h1>
+    <p class="lead">写真を見て、ルージュ ウーフォリ ドゥ ラ ソワ の商品名とシリーズ番号を当てる練習です。新人研修用のテスト。</p>
     <div class="card">
       <div class="field-label">難易度</div>
       <div class="seg" id="seg-difficulty">
         <button data-difficulty="normal" aria-pressed="true">通常</button>
         <button data-difficulty="hard" aria-pressed="false">上級</button>
         <button data-difficulty="extreme" aria-pressed="false">最上級</button>
+        <button data-difficulty="oni" aria-pressed="false">鬼</button>
       </div>
-      <div class="best" style="margin-top:6px">通常:コード表示／上級:唇写真のみ／最上級:唇写真＋似た色の選択肢</div>
+      <div class="best" style="margin-top:6px">通常:コード表示／上級:唇写真のみ／最上級:唇写真＋似た色の選択肢／鬼:漢字を入力回答</div>
       <div class="field-label">出題数</div>
       <div class="seg" id="seg-count">
         <button data-count="10" aria-pressed="true">10問</button>
@@ -266,17 +272,22 @@
     <div class="bar"><i id="q-bar" style="width:0%"></i></div>
 
     <div class="photo-row" id="q-photo-row" role="img" aria-label="商品写真"></div>
-    <div class="q-hint" id="q-hint">このコードの色名とシリーズ番号は？（タップで画像拡大）</div>
+    <div class="q-hint" id="q-hint">このコードの商品名とシリーズ番号は？（タップで画像拡大）</div>
 
-    <div class="answer-row">
+    <div class="answer-row" id="answer-row">
       <div class="col-name">
-        <div class="col-label">色名</div>
+        <div class="col-label">商品名</div>
         <div class="choices" id="q-choices"></div>
       </div>
       <div class="col-series">
         <div class="col-label">分類</div>
         <div class="choices" id="q-choices-series"></div>
       </div>
+    </div>
+
+    <div class="answer-text hidden" id="answer-text">
+      <input type="text" class="text-input" id="q-text-input" placeholder="商品名を漢字で入力" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <button class="btn" id="btn-submit-text">回答する</button>
     </div>
 
     <div class="feedback" id="q-feedback"></div>
@@ -384,16 +395,16 @@ async function tryUnlock(){
 /* ---------- 状態 ---------- */
 const BEST_KEY = "fd_quiz_best_v1";
 let usableByMode = { normal:null, hard:null }; // 画像読み込みに成功した商品（写真の種類ごと）
-let difficulty = "normal"; // "normal" | "hard" | "extreme"
-function photoModeFor(diff){ return diff === "normal" ? "normal" : "hard"; } // hard/extremeは同じ唇写真を使う
-const DIFFICULTY_LABEL = { normal:"通常", hard:"上級", extreme:"最上級" };
+let difficulty = "normal"; // "normal" | "hard" | "extreme" | "oni"
+function photoModeFor(diff){ return diff === "normal" ? "normal" : "hard"; } // hard/extreme/oniは同じ唇写真を使う
+const DIFFICULTY_LABEL = { normal:"通常", hard:"上級", extreme:"最上級", oni:"鬼" };
 let chosenCount = 10;     // 0 = 全部
 let quiz = [];            // 出題リスト
 let idx = 0;
 let score = 0;
 let missed = [];
 const SERIES_VALUES = ["Ⅰ","Ⅱ","Ⅲ"];
-let selName = null;    // 選択中の色名（未確定）
+let selName = null;    // 選択中の商品名（未確定）
 let selSeries = null;  // 選択中のシリーズ番号（未確定）
 let locked = false;    // 両方確定して結果表示済みか
 
@@ -491,9 +502,10 @@ function renderQuestion(){
   selName = null; selSeries = null; locked = false;
 
   const hints = {
-    normal: "このコードの色名とシリーズ番号は？（タップで画像拡大）",
-    hard: "この唇写真から色名とシリーズ番号は？（タップで画像拡大）",
-    extreme: "この唇写真から色名とシリーズ番号は？似た色に注意（タップで画像拡大）",
+    normal: "このコードの商品名とシリーズ番号は？（タップで画像拡大）",
+    hard: "この唇写真から商品名とシリーズ番号は？（タップで画像拡大）",
+    extreme: "この唇写真から商品名とシリーズ番号は？似た色に注意（タップで画像拡大）",
+    oni: "この唇写真の商品名を漢字で入力してください（タップで画像拡大）",
   };
   $("#q-hint").textContent = hints[difficulty];
 
@@ -505,25 +517,37 @@ function renderQuestion(){
     photoRow.appendChild(makePhotoEl(q.correct.img, q.correct.code, false));
   }
 
-  const nameWrap = $("#q-choices");
-  nameWrap.innerHTML = "";
-  q.options.forEach((opt,i)=>{
-    const b = document.createElement("button");
-    b.className = "choice";
-    b.innerHTML = `<span class="num">${i+1}</span><span>${opt.kw}</span>`;
-    b.addEventListener("click", ()=>selectName(opt, b));
-    nameWrap.appendChild(b);
-  });
+  const isOni = difficulty === "oni";
+  $("#answer-row").classList.toggle("hidden", isOni);
+  $("#answer-text").classList.toggle("hidden", !isOni);
 
-  const seriesWrap = $("#q-choices-series");
-  seriesWrap.innerHTML = "";
-  q.seriesOptions.forEach((val)=>{
-    const b = document.createElement("button");
-    b.className = "choice series";
-    b.textContent = val;
-    b.addEventListener("click", ()=>selectSeries(val, b));
-    seriesWrap.appendChild(b);
-  });
+  $("#q-choices").innerHTML = "";
+  $("#q-choices-series").innerHTML = "";
+  if(isOni){
+    const input = $("#q-text-input");
+    input.value = "";
+    input.disabled = false;
+    input.classList.remove("correct","wrong");
+    setTimeout(()=>input.focus(), 0);
+  } else {
+    const nameWrap = $("#q-choices");
+    q.options.forEach((opt,i)=>{
+      const b = document.createElement("button");
+      b.className = "choice";
+      b.innerHTML = `<span class="num">${i+1}</span><span>${opt.kw}</span>`;
+      b.addEventListener("click", ()=>selectName(opt, b));
+      nameWrap.appendChild(b);
+    });
+
+    const seriesWrap = $("#q-choices-series");
+    q.seriesOptions.forEach((val)=>{
+      const b = document.createElement("button");
+      b.className = "choice series";
+      b.textContent = val;
+      b.addEventListener("click", ()=>selectSeries(val, b));
+      seriesWrap.appendChild(b);
+    });
+  }
 
   $("#q-feedback").textContent = "";
   $("#q-feedback").className = "feedback";
@@ -584,6 +608,34 @@ function evaluateAnswer(){
 $("#btn-next").addEventListener("click", ()=>{
   if(idx < quiz.length-1){ idx++; renderQuestion(); }
   else { renderResult(); }
+});
+
+/* ---------- 鬼モード：漢字を文字入力で回答 ---------- */
+function submitTextAnswer(){
+  if(locked) return;
+  const q = quiz[idx];
+  const input = $("#q-text-input");
+  const answer = input.value.trim();
+  if(!answer) return;
+  locked = true;
+
+  const correct = answer === q.correct.kanji;
+  if(correct){ score++; }
+  else { missed.push(q.correct); }
+
+  input.disabled = true;
+  input.classList.add(correct ? "correct" : "wrong");
+
+  const fb = $("#q-feedback");
+  fb.textContent = correct ? "正解！" : "不正解";
+  fb.className = "feedback " + (correct ? "ok" : "ng");
+  $("#q-fullname").textContent = q.correct.fullName;
+  $("#q-score").textContent = `正解 ${score}`;
+  $("#btn-next").classList.remove("hidden");
+}
+$("#btn-submit-text").addEventListener("click", submitTextAnswer);
+$("#q-text-input").addEventListener("keydown", (e)=>{
+  if(e.key === "Enter" && !e.isComposing){ e.preventDefault(); e.stopPropagation(); submitTextAnswer(); }
 });
 
 /* ---------- 結果 ---------- */
