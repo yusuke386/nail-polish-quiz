@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Causette.Joli 商品名クイズ</title>
+<style>
+  :root{
+    --bg:#faf5f2;
+    --card:#ffffff;
+    --ink:#3b333a;
+    --ink-soft:#8a7f85;
+    --line:#ece2dc;
+    --accent:#b47268;
+    --accent-soft:#f3e4e0;
+    --ok:#3f8a6e;
+    --ok-soft:#e3f1ea;
+    --ng:#c05a54;
+    --ng-soft:#f7e3e1;
+    --shadow:0 6px 24px rgba(90,60,55,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    line-height:1.6;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    min-height:100dvh;
+    padding:24px 18px calc(28px + env(safe-area-inset-bottom));
+    display:flex;
+    flex-direction:column;
+  }
+  h1{
+    font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:.04em;
+    margin:0 0 4px;
+  }
+  .brand{
+    font-size:12px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:18px;
+  }
+  .lead{color:var(--ink-soft);font-size:14px;margin:0 0 22px}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    padding:22px;
+  }
+  .screen{flex:1;display:flex;flex-direction:column;justify-content:center}
+  .hidden{display:none!important}
+
+  /* start */
+  .field-label{font-size:13px;color:var(--ink-soft);margin:18px 0 8px}
+  .seg{display:flex;gap:8px}
+  .seg button{
+    flex:1;
+    padding:12px 0;
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:12px;
+    font-size:15px;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .seg button[aria-pressed="true"]{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+    font-weight:600;
+  }
+  .btn{
+    display:block;width:100%;
+    padding:15px 0;
+    border:none;border-radius:14px;
+    background:var(--accent);color:#fff;
+    font-size:16px;font-weight:600;letter-spacing:.04em;
+    cursor:pointer;
+    margin-top:22px;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+  .best{font-size:13px;color:var(--ink-soft);margin-top:14px;text-align:center}
+
+  /* lock */
+  .text-input{
+    display:block;width:100%;
+    padding:13px 14px;
+    border:1px solid var(--line);border-radius:12px;
+    font-size:16px;color:var(--ink);
+    background:#fff;
+  }
+  .text-input:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .lock-error{min-height:20px;font-size:13px;color:var(--ng);margin-top:10px;text-align:center}
+
+  /* quiz */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:13px;color:var(--ink-soft);margin-bottom:10px;
+  }
+  .bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:16px}
+  .bar > i{display:block;height:100%;background:var(--accent);transition:width .3s ease}
+  .photo{
+    width:100%;aspect-ratio:1/1;
+    border-radius:16px;overflow:hidden;
+    background:var(--accent-soft) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%23b47268" stroke-width="1.2"><circle cx="12" cy="12" r="9"/></svg>') center/40px no-repeat;
+    display:flex;align-items:center;justify-content:center;
+    cursor:zoom-in;
+    position:relative;
+  }
+  .photo img{width:100%;height:100%;object-fit:cover;display:block}
+  .photo .err{font-size:13px;color:var(--ink-soft);padding:20px;text-align:center}
+  /* 商品名マスク：ラベル下部の【】キーワード部分だけ白塗りで隠す（回答前のみ） */
+  .name-mask{
+    position:absolute;
+    left:34%; width:32%;
+    top:59%; height:12%;
+    background:#fff;
+    pointer-events:none;
+  }
+  .q-hint{text-align:center;font-size:13px;color:var(--ink-soft);margin:14px 0 12px}
+  .choices{display:flex;flex-direction:column;gap:10px}
+  .choice{
+    width:100%;text-align:left;
+    padding:14px 16px;
+    border:1px solid var(--line);border-radius:13px;
+    background:#fff;color:var(--ink);
+    font-size:15px;letter-spacing:.02em;
+    cursor:pointer;
+    display:flex;align-items:center;gap:10px;
+  }
+  .choice .num{
+    flex:none;width:22px;height:22px;border-radius:7px;
+    background:var(--accent-soft);color:var(--accent);
+    font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .choice[disabled]{cursor:default}
+  .choice.correct{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:600}
+  .choice.correct .num{background:var(--ok);color:#fff}
+  .choice.wrong{background:var(--ng-soft);border-color:var(--ng);color:var(--ng);font-weight:600}
+  .choice.wrong .num{background:var(--ng);color:#fff}
+  .feedback{margin-top:16px;text-align:center;min-height:22px;font-size:14px;font-weight:600}
+  .feedback.ok{color:var(--ok)}
+  .feedback.ng{color:var(--ng)}
+  .fullname{margin-top:4px;text-align:center;font-size:12px;color:var(--ink-soft);font-weight:400}
+
+  /* result */
+  .score-big{
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+    font-size:44px;text-align:center;margin:6px 0 0;
+  }
+  .score-big small{font-size:20px;color:var(--ink-soft)}
+  .score-sub{text-align:center;color:var(--ink-soft);font-size:14px;margin-bottom:8px}
+  .review-title{font-size:13px;color:var(--ink-soft);margin:22px 0 10px}
+  .miss{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+  .miss img{width:52px;height:52px;border-radius:10px;object-fit:cover;background:var(--accent-soft);flex:none}
+  .miss .m-kw{font-size:14px;font-weight:600}
+  .miss .m-full{font-size:11px;color:var(--ink-soft)}
+  .allright{text-align:center;color:var(--ok);font-weight:600;margin-top:18px}
+
+  /* zoom overlay */
+  .zoom{
+    position:fixed;inset:0;background:rgba(35,25,28,.92);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+    cursor:zoom-out;z-index:50;
+  }
+  .zoom-inner{
+    position:relative;
+    width:min(calc(100vw - 40px), calc(100vh - 40px));
+    height:min(calc(100vw - 40px), calc(100vh - 40px));
+  }
+  .zoom-inner img{width:100%;height:100%;object-fit:contain;border-radius:12px;display:block}
+
+  .foot{margin-top:22px;text-align:center;font-size:11px;color:var(--ink-soft);letter-spacing:.03em}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== LOCK ===== -->
+  <section id="screen-lock" class="screen">
+    <div class="brand">Causette.Joli</div>
+    <h1>商品名クイズ</h1>
+    <p class="lead">合言葉を入力してください。</p>
+    <div class="card">
+      <input type="password" class="text-input" id="lock-input" placeholder="合言葉" autocomplete="off">
+      <button class="btn" id="btn-unlock">入る</button>
+      <div class="lock-error" id="lock-error"></div>
+    </div>
+  </section>
+
+  <!-- ===== START ===== -->
+  <section id="screen-start" class="screen hidden">
+    <div class="brand">Causette.Joli</div>
+    <h1>商品名クイズ</h1>
+    <p class="lead">写真を見て、Coeur de Fleur Nail Color の商品名（【 】内）を4択で当てる練習です。新人研修用のテスト。</p>
+    <div class="card">
+      <div class="field-label">出題数</div>
+      <div class="seg" id="seg-count">
+        <button data-count="10" aria-pressed="true">10問</button>
+        <button data-count="20" aria-pressed="false">20問</button>
+        <button data-count="0" aria-pressed="false">全部</button>
+      </div>
+      <button class="btn" id="btn-start">はじめる</button>
+      <div class="best" id="best-line"></div>
+    </div>
+    <div class="foot">画像は causettejoli.jp から読み込みます（要ネット接続）</div>
+  </section>
+
+  <!-- ===== LOADING ===== -->
+  <section id="screen-loading" class="screen hidden">
+    <div class="card" style="text-align:center">
+      <div class="brand" style="margin:0 0 10px">Loading</div>
+      <p class="lead" style="margin:0">画像を読み込んでいます…<br><span id="load-count" style="font-size:13px"></span></p>
+    </div>
+  </section>
+
+  <!-- ===== QUIZ ===== -->
+  <section id="screen-quiz" class="screen hidden">
+    <div class="topbar">
+      <span id="q-progress">問題 1 / 10</span>
+      <span id="q-score">正解 0</span>
+    </div>
+    <div class="bar"><i id="q-bar" style="width:0%"></i></div>
+
+    <div class="photo" id="q-photo" role="img" aria-label="商品写真"></div>
+    <div class="q-hint">この商品名は？（タップで画像拡大）</div>
+
+    <div class="choices" id="q-choices"></div>
+
+    <div class="feedback" id="q-feedback"></div>
+    <div class="fullname" id="q-fullname"></div>
+
+    <button class="btn hidden" id="btn-next">次へ</button>
+  </section>
+
+  <!-- ===== RESULT ===== -->
+  <section id="screen-result" class="screen hidden">
+    <div class="brand">Result</div>
+    <div class="card">
+      <div class="score-big" id="r-score">0<small> / 10</small></div>
+      <div class="score-sub" id="r-sub"></div>
+      <div id="r-review"></div>
+      <button class="btn" id="btn-retry-miss">間違えた問題だけ復習</button>
+      <button class="btn ghost" id="btn-again">最初からもう一度</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ---------- 商品データ（Coeur de Fleur Nail Color 系 43点） ---------- */
+const IMG_BASE = "https://makeshop-multi-images.akamaized.net/cjms/itemimages/";
+const RAW = [
+  ["KUZUNOHANA ISAMU","000000000216_DhS8Mee.jpg","normal"],
+  ["ENOKOROGUSA MEZURU","000000000215_pIQJSyn.jpg","normal"],
+  ["MIZUKAZURA KIKAN","000000000213_dRuM9PB.jpg","shunkan"],
+  ["HIZAKARI GAJUN","000000000208_NoGDYFE.jpg","normal"],
+  ["KOSHITAYAMI SHOUSHA","000000000209_y48AnY1.jpg","normal"],
+  ["HOOZUKI ITOOSHI","000000000210_qb5sH2x.jpg","normal"],
+  ["GAKUAJISAI BIBISHI 26","000000000205_pASJOBD.jpg","normal"],
+  ["NAEBANOSORA 26 SHUGYOKU","000000000204_cjm2lgW.jpg","normal"],
+  ["KUROYURI BIKI","000000000194_urrFaAB.jpg","normal"],
+  ["HANAKINPOUGE USUGUMO","000000000183_Gz8VmSS.jpg","beni"],
+  ["TENJIKUBOTAN OBOROZUKUYO","000000000182_hRPfYCk.jpg","beni"],
+  ["BARA USUZUKU","000000000181_Z7yiIZ7.jpg","beni"],
+  ["TENJIKUAOI NANATSUBOSHI","000000000180_3AYs2SU.jpg","beni"],
+  ["ITESORA TAIKAN","000000000176_XwUcehH.jpg","shunkan"],
+  ["NEKOYANAGI KIYORA","000000000033_MAi7DJ2.jpg","normal"],
+  ["KONOHA SHIORASHI","000000000032_2nCXaTt.jpg","normal"],
+  ["KONAYUKI KIRAYAKA","000000000034_W5Zj2Cv.jpg","normal"],
+  ["HIIRAGI DATESUGATA","000000000035_dsVAqui.jpg","normal"],
+  ["SHIINOMI TAOYAME","000000000029_0BggiJp.jpg","normal"],
+  ["MOMIJITSUTA SEIEN","000000000030_mLGfjku.jpg","normal"],
+  ["KOSUMOSU SENSEN","000000000031_ZQp37qV.jpg","normal"],
+  ["KINMOKUSEI KAZENOSUGATA","000000000028_wxxGBKf.jpg","normal"],
+  ["SARUSUBERI NATSUSUGATA","000000000010_1SZNQlU.jpg","normal"],
+  ["NATSUSORA ENTEN","000000000011_i9bhOQK.jpg","normal"],
+  ["NATSUKUMO EIEI","000000000012_GDmWq3r.jpg","normal"],
+  ["HIMAWARI OMOISOMERU","000000000013_SGOZnrg.jpg","normal"],
+  ["TSUKUSHINBO TENREI","000000000047_Kdc1V4p.jpg","normal"],
+  ["SHIBAZAKURA KAREN","000000000045_rxYvEyg.jpg","normal"],
+  ["RURIKARAKUSA ENZEN","000000000044_nwtL70q.jpg","normal"],
+  ["HANAMIZUKI ZENBI","000000000046_znNhYiK.jpg","normal"],
+  ["WATAHANASHIBE SHITOYAKA","000000000009_S8ATIOm.jpg","normal"],
+  ["SHAKUYAKU TANREI","000000000005_sur5rDo.jpg","normal"],
+  ["SAKURA SOSO","000000000007_fSSE2dn.jpg","normal"],
+  ["NADESHIKO YASASUGATA","000000000004_hG2JmHK.jpg","normal"],
+  ["MOMO URUWASHI","000000000003_OJVMiAG.jpg","normal"],
+  ["KOUBAI YUUGA","000000000001_RPqhN9W.jpg","normal"],
+  ["KOBUSHI KIYORAKA","000000000008_pnYQxcn.jpg","normal"],
+  ["HAGI TAOYAKA","000000000006_9kkmOWf.jpg","normal"],
+  ["BOTAN ADEYAKA","000000000002_ukbBpLN.jpg","normal"],
+  ["TSURARA IKAN","000000000103_kuq4CL3.jpg","shunkan"],
+  ["KUSATSUYU FUUSHU","000000000102_CRvMNlQ.jpg","shunkan"],
+  ["SEIRAN YASHU","000000000101_zCFdyLA.jpg","shunkan"],
+  ["SAMIDARE ENKA","000000000100_6Y66L1F.jpg","shunkan"],
+];
+const PRODUCTS = RAW.map(([kw,img,series])=>({
+  kw,
+  img: IMG_BASE + img,
+  series,
+  fullName: series==="beni"
+      ? `【${kw}】BENI Coeur de Fleur Nail Color`
+    : series==="shunkan"
+      ? `【${kw}】-SHUNKAN Series- Coeur de Fleur Nail Color`
+      : `【${kw}】Coeur de Fleur Nail Color`,
+}));
+
+/* ---------- 合言葉ロック ---------- */
+// パスワードそのものではなく SHA-256 ハッシュを埋め込んで比較する
+// （簡易的な鍵：ソースを見ても平文はわからないが、本物のサーバー認証ではない）
+const LOCK_HASH = "6a4a20a527695a2bc41d00d2143791c53384bddb290caa1cb26be5b1a4720c07";
+const LOCK_KEY = "cj_quiz_unlocked_v1";
+async function sha256Hex(text){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function tryUnlock(){
+  const input = $("#lock-input");
+  const val = input.value;
+  const hash = await sha256Hex(val);
+  if(hash === LOCK_HASH){
+    try{ localStorage.setItem(LOCK_KEY, "1"); }catch(e){}
+    $("#lock-error").textContent = "";
+    show("start");
+    renderBestLine();
+  } else {
+    $("#lock-error").textContent = "合言葉が違います";
+    input.value = "";
+    input.focus();
+  }
+}
+
+/* ---------- 状態 ---------- */
+const BEST_KEY = "cj_quiz_best_v1";
+let usable = null;        // 画像読み込みに成功した商品
+let chosenCount = 10;     // 0 = 全部
+let quiz = [];            // 出題リスト
+let idx = 0;
+let score = 0;
+let missed = [];
+let answered = false;  // 現在の問題に回答済みか（true ならマスク解除でOK）
+
+/* ---------- ユーティリティ ---------- */
+const $ = (s)=>document.querySelector(s);
+const shuffle = (a)=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; };
+function show(screen){
+  ["lock","start","loading","quiz","result"].forEach(s=>$("#screen-"+s).classList.toggle("hidden", s!==screen));
+}
+function loadBest(){ try{ return JSON.parse(localStorage.getItem(BEST_KEY)||"{}"); }catch(e){ return {}; } }
+function saveBest(obj){ try{ localStorage.setItem(BEST_KEY, JSON.stringify(obj)); }catch(e){} }
+function renderBestLine(){
+  const b = loadBest();
+  const key = String(chosenCount);
+  const el = $("#best-line");
+  if(b[key]) el.textContent = `自己ベスト（${chosenCount===0?"全部":chosenCount+"問"}）: ${b[key].correct} / ${b[key].total}`;
+  else el.textContent = "";
+}
+
+/* ---------- 出題数の選択 ---------- */
+$("#seg-count").addEventListener("click",(e)=>{
+  const btn = e.target.closest("button"); if(!btn) return;
+  [...e.currentTarget.children].forEach(b=>b.setAttribute("aria-pressed", b===btn));
+  chosenCount = parseInt(btn.dataset.count,10);
+  renderBestLine();
+});
+
+/* ---------- 画像プリロード ---------- */
+function preload(p){
+  return new Promise((res)=>{
+    const im = new Image();
+    im.onload = ()=>res({p, ok:true});
+    im.onerror = ()=>res({p, ok:false});
+    im.src = p.img;
+  });
+}
+async function ensureImages(){
+  if(usable) return;
+  show("loading");
+  let done = 0;
+  const results = await Promise.all(PRODUCTS.map(p=>
+    preload(p).then(r=>{ done++; $("#load-count").textContent = `${done} / ${PRODUCTS.length}`; return r; })
+  ));
+  usable = results.filter(r=>r.ok).map(r=>r.p);
+  if(usable.length < 4){ // まず起きないが保険
+    usable = PRODUCTS.slice();
+  }
+}
+
+/* ---------- クイズ生成 ---------- */
+function buildQuiz(list){
+  const pool = shuffle(usable);
+  const n = chosenCount===0 ? pool.length : Math.min(chosenCount, pool.length);
+  const targets = list || pool.slice(0, n);
+  quiz = targets.map(correct=>{
+    const distractors = shuffle(usable.filter(p=>p.kw!==correct.kw)).slice(0,3);
+    const options = shuffle([correct, ...distractors]);
+    return { correct, options };
+  });
+  idx = 0; score = 0; missed = [];
+}
+
+/* ---------- 出題描画 ---------- */
+function renderQuestion(){
+  const q = quiz[idx];
+  $("#q-progress").textContent = `問題 ${idx+1} / ${quiz.length}`;
+  $("#q-score").textContent = `正解 ${score}`;
+  $("#q-bar").style.width = (idx/quiz.length*100) + "%";
+
+  answered = false;
+  const photo = $("#q-photo");
+  photo.innerHTML = "";
+  const im = new Image();
+  im.alt = "商品写真";
+  im.onerror = ()=>{ photo.innerHTML = '<div class="err">画像を読み込めませんでした</div>'; };
+  im.src = q.correct.img;
+  photo.appendChild(im);
+  const mask = document.createElement("div");
+  mask.className = "name-mask";
+  photo.appendChild(mask);
+
+  const wrap = $("#q-choices");
+  wrap.innerHTML = "";
+  q.options.forEach((opt,i)=>{
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.innerHTML = `<span class="num">${i+1}</span><span>${opt.kw}</span>`;
+    b.addEventListener("click", ()=>answer(opt, b));
+    wrap.appendChild(b);
+  });
+
+  $("#q-feedback").textContent = "";
+  $("#q-feedback").className = "feedback";
+  $("#q-fullname").textContent = "";
+  $("#btn-next").classList.add("hidden");
+  $("#btn-next").textContent = idx === quiz.length-1 ? "結果を見る" : "次へ";
+}
+
+function answer(opt, btn){
+  const q = quiz[idx];
+  if($("#q-choices").dataset.locked) return;
+  $("#q-choices").dataset.locked = "1";
+
+  const correct = opt.kw === q.correct.kw;
+  if(correct){ score++; }
+  else { missed.push(q.correct); }
+
+  answered = true;
+  const mask = $("#q-photo .name-mask");
+  if(mask) mask.classList.add("hidden");
+
+  [...$("#q-choices").children].forEach(c=>{
+    c.disabled = true;
+    const kw = c.querySelector("span:last-child").textContent;
+    if(kw === q.correct.kw) c.classList.add("correct");
+    else if(c === btn) c.classList.add("wrong");
+  });
+
+  const fb = $("#q-feedback");
+  fb.textContent = correct ? "正解！" : "不正解";
+  fb.className = "feedback " + (correct ? "ok" : "ng");
+  $("#q-fullname").textContent = q.correct.fullName;
+  $("#q-score").textContent = `正解 ${score}`;
+  $("#btn-next").classList.remove("hidden");
+}
+
+$("#btn-next").addEventListener("click", ()=>{
+  $("#q-choices").dataset.locked = "";
+  if(idx < quiz.length-1){ idx++; renderQuestion(); }
+  else { renderResult(); }
+});
+
+/* ---------- 結果 ---------- */
+function renderResult(){
+  $("#q-bar").style.width = "100%";
+  const total = quiz.length;
+  const pct = Math.round(score/total*100);
+  $("#r-score").innerHTML = `${score}<small> / ${total}</small>`;
+  $("#r-sub").textContent = `正答率 ${pct}%`;
+
+  // 自己ベスト更新（同じ出題数のときだけ）
+  const key = String(chosenCount);
+  const b = loadBest();
+  if(!b[key] || score/total > b[key].correct/b[key].total){
+    b[key] = { correct: score, total }; saveBest(b);
+  }
+
+  const rv = $("#r-review");
+  rv.innerHTML = "";
+  if(missed.length === 0){
+    rv.innerHTML = '<div class="allright">全問正解！おみごとです</div>';
+    $("#btn-retry-miss").classList.add("hidden");
+  } else {
+    $("#btn-retry-miss").classList.remove("hidden");
+    const t = document.createElement("div");
+    t.className = "review-title";
+    t.textContent = `間違えた商品（${missed.length}）`;
+    rv.appendChild(t);
+    missed.forEach(p=>{
+      const row = document.createElement("div");
+      row.className = "miss";
+      row.innerHTML = `<img src="${p.img}" alt=""><div><div class="m-kw">${p.kw}</div><div class="m-full">${p.fullName}</div></div>`;
+      rv.appendChild(row);
+    });
+  }
+  show("result");
+}
+
+$("#btn-retry-miss").addEventListener("click", ()=>{
+  const list = shuffle(missed);
+  buildQuiz(list);
+  show("quiz"); renderQuestion();
+});
+$("#btn-again").addEventListener("click", ()=>{
+  show("start"); renderBestLine();
+});
+
+/* ---------- スタート ---------- */
+$("#btn-start").addEventListener("click", async ()=>{
+  await ensureImages();
+  buildQuiz(null);
+  show("quiz");
+  renderQuestion();
+});
+
+/* ---------- 画像拡大 ---------- */
+$("#q-photo").addEventListener("click", ()=>{
+  const src = quiz[idx] && quiz[idx].correct.img;
+  if(!src) return;
+  const ov = document.createElement("div");
+  ov.className = "zoom";
+  ov.innerHTML = `<div class="zoom-inner"><img src="${src}" alt="">${answered ? "" : '<div class="name-mask"></div>'}</div>`;
+  ov.addEventListener("click", ()=>ov.remove());
+  document.body.appendChild(ov);
+});
+
+/* ---------- キーボード操作（PCテスト用） ---------- */
+document.addEventListener("keydown",(e)=>{
+  if(!$("#screen-quiz").classList.contains("hidden")){
+    if(["1","2","3","4"].includes(e.key)){
+      const b = $("#q-choices").children[+e.key-1];
+      if(b && !b.disabled) b.click();
+    } else if((e.key === "Enter" || e.key === " ") && !$("#btn-next").classList.contains("hidden")){
+      e.preventDefault(); $("#btn-next").click();
+    }
+  }
+});
+
+$("#btn-unlock").addEventListener("click", tryUnlock);
+$("#lock-input").addEventListener("keydown", (e)=>{ if(e.key === "Enter") tryUnlock(); });
+
+/* ---------- 初期表示：解錠済みならロック画面をスキップ ---------- */
+(function initLock(){
+  let unlocked = false;
+  try{ unlocked = localStorage.getItem(LOCK_KEY) === "1"; }catch(e){}
+  if(unlocked){ show("start"); renderBestLine(); }
+  else { show("lock"); $("#lock-input").focus(); }
+})();
+</script>
+</body>
+</html>
