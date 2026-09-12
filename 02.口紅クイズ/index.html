@@ -112,6 +112,7 @@
   }
   .bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:8px}
   .bar > i{display:block;height:100%;background:var(--accent);transition:width .3s ease}
+  .photo-row{display:flex;justify-content:center;align-items:flex-start;gap:8px;flex-wrap:wrap}
   .photo{
     width:36%;max-width:150px;margin:0 auto;aspect-ratio:1/1;
     border-radius:14px;overflow:hidden;
@@ -120,6 +121,7 @@
     cursor:zoom-in;
     position:relative;
   }
+  .photo-sm{width:30%;max-width:118px;margin:0}
   .photo img{width:100%;height:100%;object-fit:cover;display:block}
   .photo .err{font-size:12px;color:var(--ink-soft);padding:14px;text-align:center}
   /* 商品コードバッジ：写真右上に表示するヒント（回答前後とも常時表示） */
@@ -224,8 +226,14 @@
   <section id="screen-start" class="screen hidden">
     <div class="brand">FRANGES DIVINES</div>
     <h1>色名クイズ</h1>
-    <p class="lead">写真右上のコード（例:A6）を見て、ルージュ ウーフォリ ドゥ ラ ソワ の色名を4択で当てる練習です。新人研修用のテスト。</p>
+    <p class="lead">写真を見て、ルージュ ウーフォリ ドゥ ラ ソワ の色名とシリーズ番号を当てる練習です。新人研修用のテスト。</p>
     <div class="card">
+      <div class="field-label">難易度</div>
+      <div class="seg" id="seg-difficulty">
+        <button data-difficulty="normal" aria-pressed="true">通常</button>
+        <button data-difficulty="hard" aria-pressed="false">上級</button>
+      </div>
+      <div class="best" style="margin-top:6px">通常:写真右上にコード表示／上級:唇写真のみで判定</div>
       <div class="field-label">出題数</div>
       <div class="seg" id="seg-count">
         <button data-count="10" aria-pressed="true">10問</button>
@@ -255,8 +263,8 @@
     </div>
     <div class="bar"><i id="q-bar" style="width:0%"></i></div>
 
-    <div class="photo" id="q-photo" role="img" aria-label="商品写真"></div>
-    <div class="q-hint">このコードの色名とシリーズ番号は？（タップで画像拡大）</div>
+    <div class="photo-row" id="q-photo-row" role="img" aria-label="商品写真"></div>
+    <div class="q-hint" id="q-hint">このコードの色名とシリーズ番号は？（タップで画像拡大）</div>
 
     <div class="answer-row">
       <div class="col-name">
@@ -293,54 +301,55 @@
 /* ---------- 商品データ（ルージュ ウーフォリ ドゥ ラ ソワ 系 40点） ---------- */
 const IMG_BASE = "https://f-divines.com/cdn/shop/files/";
 const RAW = [
-  ["A1","月の霜","TSUKI NO SHIMO","Ⅱ","fdlip_wholeA1.jpg"],
-  ["A2","三五の月","SANGO NO TSUKI","Ⅲ","fdlip_wholeA2_faf929b5-4146-473c-81b6-2c5e86780029.jpg"],
-  ["A3","八重雲","YAEGUMO","Ⅲ","fdlip_wholeA3_84a92491-645c-445f-b6e4-a9abe40e006a.jpg"],
-  ["A4","七星","NANATSUBOSHI","Ⅲ","fdlip_wholeA4_f49dc1cf-e777-4fe9-b5a9-31f3c8e15c41.jpg"],
-  ["A5","月人","TSUKIHITO","Ⅰ","fdlip_wholeA5-2.jpg"],
-  ["A6","月影","GETSUEI","Ⅰ","fdlip_wholeA6_85fd77b0-215c-463a-a71a-4ea23185f974.jpg"],
-  ["A7","夕影","YUUKAGE","Ⅲ","fdlip_wholeA7-2.jpg"],
-  ["A8","舂く","USUZUKU","Ⅱ","fdlip_wholeA8_c58d107c-1f52-45e7-99c1-0b4ef0e5d6f0.jpg"],
-  ["A9","朝日子","ASAHIKO","Ⅰ","fdlip_wholeA9_2a35c737-dae5-4fa3-9509-0fb6ecef93d1.jpg"],
-  ["A10","有明","ARIAKE","Ⅰ","fdlip_wholeA10_5712edf9-ecea-4454-9488-c1fce0a9b291.jpg"],
-  ["B1","月華","GEKKA","Ⅰ","fdlip_wholeB1_97b742f9-424d-4901-bd6e-fe8c39010585.jpg"],
-  ["B2","望月","MOCHIZUKI","Ⅰ","fdlip_wholeB2_7675c825-6680-422b-ba8d-d20273763057.jpg"],
-  ["B3","上露","UWATSUYU","Ⅰ","fdlip_wholeB3_0b4534bb-ac99-4b08-aab9-726bc5228a5a.jpg"],
-  ["B4","天霧る","AMAGIRU","Ⅲ","fdlip_wholeB4_f226fe6e-dfc9-4f5f-8c3b-ecaab184d046.jpg"],
-  ["B5","水無川","MINASHIGAWA","Ⅱ","fdlip_wholeB5_fdb050cf-7a8c-4e11-a930-eeab84ff39c3.jpg"],
-  ["B6","霞","KASUMI","Ⅱ","fdlip_wholeB6_f557eea9-adf5-4613-89b4-5654448d827c.jpg"],
-  ["B7","露けし","TSUYUKESHI","Ⅱ","fdlip_wholeB7_9bb6e8c2-8ffc-4469-b163-3c4d91ad24a0.jpg"],
-  ["B8","彩雲","SAIUN","Ⅰ","fdlip_wholeB8_0e433d40-5226-4c58-879d-59ba74806d86.jpg"],
-  ["B9","明星","AKABOSHI","Ⅱ","fdlip_wholeB9_3393c628-3d96-4eb4-a58e-e247448f8008.jpg"],
-  ["B10","野馬","YABA","Ⅰ","fdlip_wholeB10_78a06498-73ad-4a64-ad94-82ee71404168.jpg"],
-  ["C1","日影","HIKAGE","Ⅱ","fdlip_wholeC1_b844898f-49ac-4541-a7c8-cd6b0960c47e.jpg"],
-  ["C2","下照る","SHITADERU","Ⅰ","fdlip_wholeC2_172552bf-5f00-4158-9dae-a378683832a7.jpg"],
-  ["C3","夕星","YUUZUTSU","Ⅲ","fdlip_wholeC3_e8aa9889-7cbc-4956-bf8a-cf6c745a4e24.jpg"],
-  ["C4","星影","HOSHIKAGE","Ⅰ","fdlip_wholeC4_1c1b689c-dd0c-440b-821f-d2b2a46166f9.jpg"],
-  ["C5","霧","KI","Ⅰ","fdlip_wholeC5_83cc3fc9-3bce-42b9-bb3e-5ff03c886cb0.jpg"],
-  ["C6","月の船","TSUKI NO FUNE","Ⅰ","fdlip_wholeC6_88d2ea3b-9545-4765-aecb-8f6be67ba9bd.jpg"],
-  ["C7","雲間","KUMOMA","Ⅲ","fdlip_wholeC7-2.jpg"],
-  ["C8","夜半の月","YOWA NO TSUKI","Ⅲ","fdlip_wholeC8_cf0b5129-60c3-4967-b8b5-077799893b97.jpg"],
-  ["C9","弓張の月","YUMIHARI NO TSUKI","Ⅲ","fdlip_wholeC9_277d1606-bb2f-49a5-8e72-980af409bb39.jpg"],
-  ["C10","朧月夜","OBOROZUKUYO","Ⅱ","fdlip_wholeC10_5f99aaf3-f569-41f0-bb28-02b34939bb52.jpg"],
-  ["D1","清光","SEIKOU","Ⅰ","fdlip_wholeD1_4958464f-204c-4685-8457-c4e0e35a8d87.jpg"],
-  ["D2","白露","SHIRATSUYU","Ⅱ","fdlip_wholeD2_f526c632-a065-4766-a6f2-b9502acbf1e3.jpg"],
-  ["D3","旗雲","HATAGUMO","Ⅲ","fdlip_wholeD3_4cfca260-72d4-407d-9b76-3cf83969b824.jpg"],
-  ["D4","星合","HOSHIAI","Ⅲ","fdlip_wholeD4_bd173006-5c52-43e6-981c-951173049b11.jpg"],
-  ["D5","下露","SHITATSUYU","Ⅲ","fdlip_wholeD5_9a383f6f-8973-44a1-a0c5-07557b1574b7.jpg"],
-  ["D6","薄雲","USUGUMO","Ⅰ","fdlip_wholeD6_fe829e92-0d7e-4881-b98d-b6409f0674ff.jpg"],
-  ["D7","青雲","SEIUN","Ⅲ","fdlip_wholeD7_5b5029ce-0f7b-4bce-b810-90d734c5f410.jpg"],
-  ["D8","落星","OCHIBOSHI","Ⅱ","fdlip_wholeD8_fff86205-5864-4d23-82a5-757197867f53.jpg"],
-  ["D9","夕闇","YUUYAMI","Ⅲ","fdlip_wholeD9_bfaa634e-1707-41c2-9636-6738fe22def0.jpg"],
-  ["D10","暮雨の天","BOU NO TEN","Ⅱ","fdlip_wholeD10_4621c151-06d1-4610-8054-912495919144.jpg"],
+  ["A1","月の霜","TSUKI NO SHIMO","Ⅱ","fdlip_wholeA1.jpg",["fdswatch_A1-B.jpg","fdswatch_A1.jpg"]],
+  ["A2","三五の月","SANGO NO TSUKI","Ⅲ","fdlip_wholeA2_faf929b5-4146-473c-81b6-2c5e86780029.jpg",["fdswatch_A2-B.jpg","fdswatch_A2_3004e48f-c28b-4b74-a133-8d88fb4b2501.jpg"]],
+  ["A3","八重雲","YAEGUMO","Ⅲ","fdlip_wholeA3_84a92491-645c-445f-b6e4-a9abe40e006a.jpg",["fdswatch_A3-B.jpg","fdswatch_A3_88c0f550-ac40-43a5-a048-6edfb7650f7f.jpg"]],
+  ["A4","七星","NANATSUBOSHI","Ⅲ","fdlip_wholeA4_f49dc1cf-e777-4fe9-b5a9-31f3c8e15c41.jpg",["fdswatch_A4-B.jpg","fdswatch_A4_7f11a9f8-3d62-4bfa-b944-33c6ea44b1d4.jpg"]],
+  ["A5","月人","TSUKIHITO","Ⅰ","fdlip_wholeA5-2.jpg",["fdswatch_A5-2.jpg","fdswatch_A5-B-2.jpg"]],
+  ["A6","月影","GETSUEI","Ⅰ","fdlip_wholeA6_85fd77b0-215c-463a-a71a-4ea23185f974.jpg",["fdswatch_A6-B.jpg","fdswatch_A6_91d86eda-3b57-41ca-b186-37e8e9141d20.jpg"]],
+  ["A7","夕影","YUUKAGE","Ⅲ","fdlip_wholeA7-2.jpg",["fdswatch_A7-2.jpg","fdswatch_A7-B.jpg"]],
+  ["A8","舂く","USUZUKU","Ⅱ","fdlip_wholeA8_c58d107c-1f52-45e7-99c1-0b4ef0e5d6f0.jpg",["fdswatch_A8-B.jpg","fdswatch_A8_1a7ac9e5-58dc-4920-9c74-ce2f18d25503.jpg"]],
+  ["A9","朝日子","ASAHIKO","Ⅰ","fdlip_wholeA9_2a35c737-dae5-4fa3-9509-0fb6ecef93d1.jpg",["fdswatch_A9-B.jpg","fdswatch_A9_18446395-dd6e-4a03-a9c9-b1061014f091.jpg"]],
+  ["A10","有明","ARIAKE","Ⅰ","fdlip_wholeA10_5712edf9-ecea-4454-9488-c1fce0a9b291.jpg",["fdswatch_A10-B-2.jpg","fdswatch_A10_ebefd4aa-9f37-4c66-af0d-a47e11700d15.jpg"]],
+  ["B1","月華","GEKKA","Ⅰ","fdlip_wholeB1_97b742f9-424d-4901-bd6e-fe8c39010585.jpg",["fdswatch_B1-2_155f6dd7-4316-420e-92f1-9855f327b73e.jpg"]],
+  ["B2","望月","MOCHIZUKI","Ⅰ","fdlip_wholeB2_7675c825-6680-422b-ba8d-d20273763057.jpg",["fdswatch_B2_9e5736c1-4a7e-432f-b7d9-5d5cbab1fcad.jpg"]],
+  ["B3","上露","UWATSUYU","Ⅰ","fdlip_wholeB3_0b4534bb-ac99-4b08-aab9-726bc5228a5a.jpg",["fdswatch_B3-2.jpg"]],
+  ["B4","天霧る","AMAGIRU","Ⅲ","fdlip_wholeB4_f226fe6e-dfc9-4f5f-8c3b-ecaab184d046.jpg",["fdswatch_B4_e1637726-e65d-429a-a926-dd44be266995.jpg"]],
+  ["B5","水無川","MINASHIGAWA","Ⅱ","fdlip_wholeB5_fdb050cf-7a8c-4e11-a930-eeab84ff39c3.jpg",["fdswatch_B5_9b6769e1-30ac-42af-bb33-48d5936086b0.jpg"]],
+  ["B6","霞","KASUMI","Ⅱ","fdlip_wholeB6_f557eea9-adf5-4613-89b4-5654448d827c.jpg",["fdswatch_B6_da64a693-bcad-4e26-9118-6e4bad5541c0.jpg"]],
+  ["B7","露けし","TSUYUKESHI","Ⅱ","fdlip_wholeB7_9bb6e8c2-8ffc-4469-b163-3c4d91ad24a0.jpg",["fdswatch_B7_c1ebc130-d311-4b9a-bc7d-7b76d70a8200.jpg"]],
+  ["B8","彩雲","SAIUN","Ⅰ","fdlip_wholeB8_0e433d40-5226-4c58-879d-59ba74806d86.jpg",["fdswatch_B8_4327affd-2a4d-4acb-a429-58b026ea94f0.jpg"]],
+  ["B9","明星","AKABOSHI","Ⅱ","fdlip_wholeB9_3393c628-3d96-4eb4-a58e-e247448f8008.jpg",["fdswatch_B9_5a237cdd-35d6-447c-bd5c-b6d9e707a5f2.jpg"]],
+  ["B10","野馬","YABA","Ⅰ","fdlip_wholeB10_78a06498-73ad-4a64-ad94-82ee71404168.jpg",["fdswatch_B10_c89ae7ca-f0e2-42cc-8efa-24fe98a281cd.jpg"]],
+  ["C1","日影","HIKAGE","Ⅱ","fdlip_wholeC1_b844898f-49ac-4541-a7c8-cd6b0960c47e.jpg",["fdswatch_C1-B.jpg","fdswatch_C1_050e47a6-f8fe-4e94-9540-12425341e71b.jpg"]],
+  ["C2","下照る","SHITADERU","Ⅰ","fdlip_wholeC2_172552bf-5f00-4158-9dae-a378683832a7.jpg",["fdswatch_C2-B-2.jpg","fdswatch_C2_0f5bab96-5a31-4ecd-aeae-9c10aadd6c21.jpg"]],
+  ["C3","夕星","YUUZUTSU","Ⅲ","fdlip_wholeC3_e8aa9889-7cbc-4956-bf8a-cf6c745a4e24.jpg",["fdswatch_C3-B.jpg","fdswatch_C3_9d14ccf9-e2e7-4267-b50e-d58dc012ebc2.jpg"]],
+  ["C4","星影","HOSHIKAGE","Ⅰ","fdlip_wholeC4_1c1b689c-dd0c-440b-821f-d2b2a46166f9.jpg",["fdswatch_C4-B.jpg","fdswatch_C4_e73699ff-4740-4398-8d4c-5056f8f252e6.jpg"]],
+  ["C5","霧","KI","Ⅰ","fdlip_wholeC5_83cc3fc9-3bce-42b9-bb3e-5ff03c886cb0.jpg",["fdswatch_C5-B.jpg","fdswatch_C5_d8688ad0-9123-4be4-afda-6cb80a73b90c.jpg"]],
+  ["C6","月の船","TSUKI NO FUNE","Ⅰ","fdlip_wholeC6_88d2ea3b-9545-4765-aecb-8f6be67ba9bd.jpg",["fdswatch_C6-B.jpg","fdswatch_C6_7848d1fc-2f1b-4c3c-b368-7c42aecd6839.jpg"]],
+  ["C7","雲間","KUMOMA","Ⅲ","fdlip_wholeC7-2.jpg",["fdswatch_C7-2.jpg","fdswatch_C7-B.jpg"]],
+  ["C8","夜半の月","YOWA NO TSUKI","Ⅲ","fdlip_wholeC8_cf0b5129-60c3-4967-b8b5-077799893b97.jpg",["fdswatch_C8-B.jpg","fdswatch_C8_2d85bcd1-eede-4d81-aa7c-1239cfc80612.jpg"]],
+  ["C9","弓張の月","YUMIHARI NO TSUKI","Ⅲ","fdlip_wholeC9_277d1606-bb2f-49a5-8e72-980af409bb39.jpg",["fdswatch_C9-B.jpg","fdswatch_C9_d1046eeb-a276-4863-b497-0d2d4ec5a14c.jpg"]],
+  ["C10","朧月夜","OBOROZUKUYO","Ⅱ","fdlip_wholeC10_5f99aaf3-f569-41f0-bb28-02b34939bb52.jpg",["fdswatch_C10-B.jpg","fdswatch_C10_1fd67f78-bf36-479e-a0ab-42027f2c1a8f.jpg"]],
+  ["D1","清光","SEIKOU","Ⅰ","fdlip_wholeD1_4958464f-204c-4685-8457-c4e0e35a8d87.jpg",["fdswatch_D1-B.jpg","fdswatch_D1_469749d8-d3b7-4c32-aa67-78a68b7f7bc6.jpg"]],
+  ["D2","白露","SHIRATSUYU","Ⅱ","fdlip_wholeD2_f526c632-a065-4766-a6f2-b9502acbf1e3.jpg",["fdswatch_D2-B.jpg","fdswatch_D2_3b5a14e1-7d07-460b-8182-d2230defb7e3.jpg"]],
+  ["D3","旗雲","HATAGUMO","Ⅲ","fdlip_wholeD3_4cfca260-72d4-407d-9b76-3cf83969b824.jpg",["fdswatch_D3-B.jpg","fdswatch_D3_a956ce58-171a-4d69-b228-49ee51a7d05a.jpg"]],
+  ["D4","星合","HOSHIAI","Ⅲ","fdlip_wholeD4_bd173006-5c52-43e6-981c-951173049b11.jpg",["fdswatch_D4-B.jpg","fdswatch_D4_2ed2335b-5670-445f-b2a7-d028cf3815b1.jpg"]],
+  ["D5","下露","SHITATSUYU","Ⅲ","fdlip_wholeD5_9a383f6f-8973-44a1-a0c5-07557b1574b7.jpg",["fdswatch_D5-B.jpg","fdswatch_D5_182ba90f-8ace-43c4-a67e-14714b2d2afe.jpg"]],
+  ["D6","薄雲","USUGUMO","Ⅰ","fdlip_wholeD6_fe829e92-0d7e-4881-b98d-b6409f0674ff.jpg",["fdswatch_D6-B.jpg","fdswatch_D6_1bd7dad2-d26c-4382-b572-a7b9c32b59dc.jpg"]],
+  ["D7","青雲","SEIUN","Ⅲ","fdlip_wholeD7_5b5029ce-0f7b-4bce-b810-90d734c5f410.jpg",["fdswatch_D7-B.jpg","fdswatch_D7_b9272fc8-7ca6-4e20-b555-8f1a53f8b01b.jpg"]],
+  ["D8","落星","OCHIBOSHI","Ⅱ","fdlip_wholeD8_fff86205-5864-4d23-82a5-757197867f53.jpg",["fdswatch_D8-B.jpg","fdswatch_D8_cb14de6a-f978-45ae-ae94-e8084a5476c8.jpg"]],
+  ["D9","夕闇","YUUYAMI","Ⅲ","fdlip_wholeD9_bfaa634e-1707-41c2-9636-6738fe22def0.jpg",["fdswatch_D9-B.jpg","fdswatch_D9_f4418292-50d7-4846-ba3f-33f0583b9ba7.jpg"]],
+  ["D10","暮雨の天","BOU NO TEN","Ⅱ","fdlip_wholeD10_4621c151-06d1-4610-8054-912495919144.jpg",["fdswatch_D10-B.jpg","fdswatch_D10_aae1ba34-ecce-4884-80a4-f374714298ae.jpg"]],
 ];
-const PRODUCTS = RAW.map(([code,kanji,romaji,series,img])=>({
+const PRODUCTS = RAW.map(([code,kanji,romaji,series,img,swatch])=>({
   code,
   kanji,
   romaji,
   series,
   kw: `${kanji} ${romaji}`,
   img: IMG_BASE + img,
+  swatchImgs: swatch.map(f=>IMG_BASE+f),
   fullName: `${code}　${kanji}${romaji}（${series}）`,
 }));
 
@@ -371,7 +380,8 @@ async function tryUnlock(){
 
 /* ---------- 状態 ---------- */
 const BEST_KEY = "fd_quiz_best_v1";
-let usable = null;        // 画像読み込みに成功した商品
+let usableByMode = { normal:null, hard:null }; // 画像読み込みに成功した商品（難易度ごと）
+let difficulty = "normal"; // "normal" | "hard"
 let chosenCount = 10;     // 0 = 全部
 let quiz = [];            // 出題リスト
 let idx = 0;
@@ -392,13 +402,19 @@ function loadBest(){ try{ return JSON.parse(localStorage.getItem(BEST_KEY)||"{}"
 function saveBest(obj){ try{ localStorage.setItem(BEST_KEY, JSON.stringify(obj)); }catch(e){} }
 function renderBestLine(){
   const b = loadBest();
-  const key = String(chosenCount);
+  const key = `${difficulty}:${chosenCount}`;
   const el = $("#best-line");
-  if(b[key]) el.textContent = `自己ベスト（${chosenCount===0?"全部":chosenCount+"問"}）: ${b[key].correct} / ${b[key].total}`;
+  if(b[key]) el.textContent = `自己ベスト（${difficulty==="hard"?"上級":"通常"}/${chosenCount===0?"全部":chosenCount+"問"}）: ${b[key].correct} / ${b[key].total}`;
   else el.textContent = "";
 }
 
-/* ---------- 出題数の選択 ---------- */
+/* ---------- 難易度・出題数の選択 ---------- */
+$("#seg-difficulty").addEventListener("click",(e)=>{
+  const btn = e.target.closest("button"); if(!btn) return;
+  [...e.currentTarget.children].forEach(b=>b.setAttribute("aria-pressed", b===btn));
+  difficulty = btn.dataset.difficulty;
+  renderBestLine();
+});
 $("#seg-count").addEventListener("click",(e)=>{
   const btn = e.target.closest("button"); if(!btn) return;
   [...e.currentTarget.children].forEach(b=>b.setAttribute("aria-pressed", b===btn));
@@ -407,29 +423,34 @@ $("#seg-count").addEventListener("click",(e)=>{
 });
 
 /* ---------- 画像プリロード ---------- */
-function preload(p){
+function preloadUrl(url){
   return new Promise((res)=>{
     const im = new Image();
-    im.onload = ()=>res({p, ok:true});
-    im.onerror = ()=>res({p, ok:false});
-    im.src = p.img;
+    im.onload = ()=>res(true);
+    im.onerror = ()=>res(false);
+    im.src = url;
   });
 }
-async function ensureImages(){
-  if(usable) return;
+async function ensureImages(mode){
+  if(usableByMode[mode]) return;
   show("loading");
   let done = 0;
-  const results = await Promise.all(PRODUCTS.map(p=>
-    preload(p).then(r=>{ done++; $("#load-count").textContent = `${done} / ${PRODUCTS.length}`; return r; })
-  ));
-  usable = results.filter(r=>r.ok).map(r=>r.p);
+  const results = await Promise.all(PRODUCTS.map(async p=>{
+    const urls = mode === "hard" ? p.swatchImgs : [p.img];
+    const oks = await Promise.all(urls.map(preloadUrl));
+    done++; $("#load-count").textContent = `${done} / ${PRODUCTS.length}`;
+    return { p, ok: oks.every(Boolean) };
+  }));
+  let usable = results.filter(r=>r.ok).map(r=>r.p);
   if(usable.length < 4){ // まず起きないが保険
     usable = PRODUCTS.slice();
   }
+  usableByMode[mode] = usable;
 }
 
 /* ---------- クイズ生成 ---------- */
 function buildQuiz(list){
+  const usable = usableByMode[difficulty];
   const pool = shuffle(usable);
   const n = chosenCount===0 ? pool.length : Math.min(chosenCount, pool.length);
   const targets = list || pool.slice(0, n);
@@ -449,17 +470,18 @@ function renderQuestion(){
   $("#q-bar").style.width = (idx/quiz.length*100) + "%";
 
   selName = null; selSeries = null; locked = false;
-  const photo = $("#q-photo");
-  photo.innerHTML = "";
-  const im = new Image();
-  im.alt = "商品写真";
-  im.onerror = ()=>{ photo.innerHTML = '<div class="err">画像を読み込めませんでした</div>'; };
-  im.src = q.correct.img;
-  photo.appendChild(im);
-  const badge = document.createElement("div");
-  badge.className = "code-badge";
-  badge.textContent = q.correct.code;
-  photo.appendChild(badge);
+
+  $("#q-hint").textContent = difficulty === "hard"
+    ? "この唇写真から色名とシリーズ番号は？（タップで画像拡大）"
+    : "このコードの色名とシリーズ番号は？（タップで画像拡大）";
+
+  const photoRow = $("#q-photo-row");
+  photoRow.innerHTML = "";
+  if(difficulty === "hard"){
+    q.correct.swatchImgs.forEach(url=> photoRow.appendChild(makePhotoEl(url, null, true)));
+  } else {
+    photoRow.appendChild(makePhotoEl(q.correct.img, q.correct.code, false));
+  }
 
   const nameWrap = $("#q-choices");
   nameWrap.innerHTML = "";
@@ -551,7 +573,7 @@ function renderResult(){
   $("#r-sub").textContent = `正答率 ${pct}%`;
 
   // 自己ベスト更新（同じ出題数のときだけ）
-  const key = String(chosenCount);
+  const key = `${difficulty}:${chosenCount}`;
   const b = loadBest();
   if(!b[key] || score/total > b[key].correct/b[key].total){
     b[key] = { correct: score, total }; saveBest(b);
@@ -589,22 +611,37 @@ $("#btn-again").addEventListener("click", ()=>{
 
 /* ---------- スタート ---------- */
 $("#btn-start").addEventListener("click", async ()=>{
-  await ensureImages();
+  await ensureImages(difficulty);
   buildQuiz(null);
   show("quiz");
   renderQuestion();
 });
 
-/* ---------- 画像拡大 ---------- */
-$("#q-photo").addEventListener("click", ()=>{
-  const q = quiz[idx];
-  if(!q) return;
-  const ov = document.createElement("div");
-  ov.className = "zoom";
-  ov.innerHTML = `<div class="zoom-inner"><img src="${q.correct.img}" alt=""><div class="code-badge">${q.correct.code}</div></div>`;
-  ov.addEventListener("click", ()=>ov.remove());
-  document.body.appendChild(ov);
-});
+/* ---------- 写真1枚分の要素を作る（タップで拡大） ---------- */
+function makePhotoEl(url, badgeText, small){
+  const box = document.createElement("div");
+  box.className = "photo" + (small ? " photo-sm" : "");
+  const im = new Image();
+  im.alt = "商品写真";
+  im.onerror = ()=>{ box.innerHTML = '<div class="err">画像を読み込めませんでした</div>'; };
+  im.src = url;
+  box.appendChild(im);
+  if(badgeText){
+    const badge = document.createElement("div");
+    badge.className = "code-badge";
+    badge.textContent = badgeText;
+    box.appendChild(badge);
+  }
+  box.addEventListener("click", ()=>{
+    const ov = document.createElement("div");
+    ov.className = "zoom";
+    const badgeHtml = badgeText ? `<div class="code-badge">${badgeText}</div>` : "";
+    ov.innerHTML = `<div class="zoom-inner"><img src="${url}" alt="">${badgeHtml}</div>`;
+    ov.addEventListener("click", ()=>ov.remove());
+    document.body.appendChild(ov);
+  });
+  return box;
+}
 
 /* ---------- キーボード操作（PCテスト用） ---------- */
 document.addEventListener("keydown",(e)=>{
