@@ -113,51 +113,61 @@
   .bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:8px}
   .bar > i{display:block;height:100%;background:var(--accent);transition:width .3s ease}
   .photo{
-    width:52%;max-width:210px;margin:0 auto;aspect-ratio:1/1;
-    border-radius:16px;overflow:hidden;
+    width:36%;max-width:150px;margin:0 auto;aspect-ratio:1/1;
+    border-radius:14px;overflow:hidden;
     background:var(--accent-soft) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%23b47268" stroke-width="1.2"><circle cx="12" cy="12" r="9"/></svg>') center/40px no-repeat;
     display:flex;align-items:center;justify-content:center;
     cursor:zoom-in;
     position:relative;
   }
   .photo img{width:100%;height:100%;object-fit:cover;display:block}
-  .photo .err{font-size:13px;color:var(--ink-soft);padding:20px;text-align:center}
+  .photo .err{font-size:12px;color:var(--ink-soft);padding:14px;text-align:center}
   /* 商品コードバッジ：写真右上に表示するヒント（回答前後とも常時表示） */
   .code-badge{
     position:absolute;
-    top:8px; right:8px;
+    top:6px; right:6px;
     background:rgba(59,51,58,.82);
     color:#fff;
-    font-size:13px;
+    font-size:12px;
     font-weight:700;
     letter-spacing:.03em;
-    padding:4px 10px;
+    padding:3px 8px;
     border-radius:999px;
     pointer-events:none;
   }
-  .q-hint{text-align:center;font-size:13px;color:var(--ink-soft);margin:6px 0 6px}
-  .choices{display:flex;flex-direction:column;gap:6px}
+  .q-hint{text-align:center;font-size:12px;color:var(--ink-soft);margin:5px 0 5px}
+  /* 色名（左）とシリーズ番号（右）を横並びにして、スマホでもスクロールなしで両方回答できるようにする */
+  .answer-row{display:flex;gap:8px;align-items:flex-start}
+  .col-name{flex:1 1 auto;min-width:0}
+  .col-series{flex:0 0 64px}
+  .col-label{font-size:11px;color:var(--ink-soft);margin-bottom:4px}
+  .choices{display:flex;flex-direction:column;gap:5px}
   .choice{
     width:100%;text-align:left;
-    padding:10px 16px;
-    border:1px solid var(--line);border-radius:13px;
+    padding:7px 10px;
+    border:1px solid var(--line);border-radius:11px;
     background:#fff;color:var(--ink);
-    font-size:15px;letter-spacing:.02em;
+    font-size:13px;letter-spacing:.01em;line-height:1.3;
     cursor:pointer;
-    display:flex;align-items:center;gap:10px;
+    display:flex;align-items:center;gap:7px;
   }
   .choice .num{
-    flex:none;width:22px;height:22px;border-radius:7px;
+    flex:none;width:17px;height:17px;border-radius:6px;
     background:var(--accent-soft);color:var(--accent);
-    font-size:12px;font-weight:700;
+    font-size:10px;font-weight:700;
     display:flex;align-items:center;justify-content:center;
   }
+  .choice.series{
+    justify-content:center;text-align:center;
+    padding:9px 4px;font-size:17px;font-weight:600;
+  }
   .choice[disabled]{cursor:default}
+  .choice.selected{border-color:var(--accent);background:var(--accent-soft)}
   .choice.correct{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:600}
   .choice.correct .num{background:var(--ok);color:#fff}
   .choice.wrong{background:var(--ng-soft);border-color:var(--ng);color:var(--ng);font-weight:600}
   .choice.wrong .num{background:var(--ng);color:#fff}
-  .feedback{margin-top:6px;text-align:center;min-height:22px;font-size:14px;font-weight:600}
+  .feedback{margin-top:6px;text-align:center;min-height:20px;font-size:13px;font-weight:600}
   .feedback.ok{color:var(--ok)}
   .feedback.ng{color:var(--ng)}
   .fullname{margin-top:4px;text-align:center;font-size:12px;color:var(--ink-soft);font-weight:400}
@@ -246,9 +256,18 @@
     <div class="bar"><i id="q-bar" style="width:0%"></i></div>
 
     <div class="photo" id="q-photo" role="img" aria-label="商品写真"></div>
-    <div class="q-hint">このコードの色名は？（タップで画像拡大）</div>
+    <div class="q-hint">このコードの色名とシリーズ番号は？（タップで画像拡大）</div>
 
-    <div class="choices" id="q-choices"></div>
+    <div class="answer-row">
+      <div class="col-name">
+        <div class="col-label">色名</div>
+        <div class="choices" id="q-choices"></div>
+      </div>
+      <div class="col-series">
+        <div class="col-label">分類</div>
+        <div class="choices" id="q-choices-series"></div>
+      </div>
+    </div>
 
     <div class="feedback" id="q-feedback"></div>
     <div class="fullname" id="q-fullname"></div>
@@ -358,7 +377,10 @@ let quiz = [];            // 出題リスト
 let idx = 0;
 let score = 0;
 let missed = [];
-let answered = false;  // 現在の問題に回答済みか
+const SERIES_VALUES = ["Ⅰ","Ⅱ","Ⅲ"];
+let selName = null;    // 選択中の色名（未確定）
+let selSeries = null;  // 選択中のシリーズ番号（未確定）
+let locked = false;    // 両方確定して結果表示済みか
 
 /* ---------- ユーティリティ ---------- */
 const $ = (s)=>document.querySelector(s);
@@ -414,7 +436,7 @@ function buildQuiz(list){
   quiz = targets.map(correct=>{
     const distractors = shuffle(usable.filter(p=>p.kw!==correct.kw)).slice(0,3);
     const options = shuffle([correct, ...distractors]);
-    return { correct, options };
+    return { correct, options, seriesOptions: SERIES_VALUES };
   });
   idx = 0; score = 0; missed = [];
 }
@@ -426,7 +448,7 @@ function renderQuestion(){
   $("#q-score").textContent = `正解 ${score}`;
   $("#q-bar").style.width = (idx/quiz.length*100) + "%";
 
-  answered = false;
+  selName = null; selSeries = null; locked = false;
   const photo = $("#q-photo");
   photo.innerHTML = "";
   const im = new Image();
@@ -439,14 +461,24 @@ function renderQuestion(){
   badge.textContent = q.correct.code;
   photo.appendChild(badge);
 
-  const wrap = $("#q-choices");
-  wrap.innerHTML = "";
+  const nameWrap = $("#q-choices");
+  nameWrap.innerHTML = "";
   q.options.forEach((opt,i)=>{
     const b = document.createElement("button");
     b.className = "choice";
     b.innerHTML = `<span class="num">${i+1}</span><span>${opt.kw}</span>`;
-    b.addEventListener("click", ()=>answer(opt, b));
-    wrap.appendChild(b);
+    b.addEventListener("click", ()=>selectName(opt, b));
+    nameWrap.appendChild(b);
+  });
+
+  const seriesWrap = $("#q-choices-series");
+  seriesWrap.innerHTML = "";
+  q.seriesOptions.forEach((val)=>{
+    const b = document.createElement("button");
+    b.className = "choice series";
+    b.textContent = val;
+    b.addEventListener("click", ()=>selectSeries(val, b));
+    seriesWrap.appendChild(b);
   });
 
   $("#q-feedback").textContent = "";
@@ -456,22 +488,45 @@ function renderQuestion(){
   $("#btn-next").textContent = idx === quiz.length-1 ? "結果を見る" : "次へ";
 }
 
-function answer(opt, btn){
-  const q = quiz[idx];
-  if($("#q-choices").dataset.locked) return;
-  $("#q-choices").dataset.locked = "1";
+function selectName(opt, btn){
+  if(locked) return;
+  selName = opt;
+  [...$("#q-choices").children].forEach(c=>c.classList.toggle("selected", c===btn));
+  maybeEvaluate();
+}
+function selectSeries(val, btn){
+  if(locked) return;
+  selSeries = val;
+  [...$("#q-choices-series").children].forEach(c=>c.classList.toggle("selected", c===btn));
+  maybeEvaluate();
+}
+function maybeEvaluate(){
+  if(selName && selSeries) evaluateAnswer();
+}
 
-  const correct = opt.kw === q.correct.kw;
+function evaluateAnswer(){
+  const q = quiz[idx];
+  locked = true;
+
+  const nameOk = selName.kw === q.correct.kw;
+  const seriesOk = selSeries === q.correct.series;
+  const correct = nameOk && seriesOk;
   if(correct){ score++; }
   else { missed.push(q.correct); }
 
-  answered = true;
-
   [...$("#q-choices").children].forEach(c=>{
     c.disabled = true;
+    c.classList.remove("selected");
     const kw = c.querySelector("span:last-child").textContent;
     if(kw === q.correct.kw) c.classList.add("correct");
-    else if(c === btn) c.classList.add("wrong");
+    else if(!nameOk && kw === selName.kw) c.classList.add("wrong");
+  });
+  [...$("#q-choices-series").children].forEach(c=>{
+    c.disabled = true;
+    c.classList.remove("selected");
+    const val = c.textContent;
+    if(val === q.correct.series) c.classList.add("correct");
+    else if(!seriesOk && val === selSeries) c.classList.add("wrong");
   });
 
   const fb = $("#q-feedback");
@@ -483,7 +538,6 @@ function answer(opt, btn){
 }
 
 $("#btn-next").addEventListener("click", ()=>{
-  $("#q-choices").dataset.locked = "";
   if(idx < quiz.length-1){ idx++; renderQuestion(); }
   else { renderResult(); }
 });
