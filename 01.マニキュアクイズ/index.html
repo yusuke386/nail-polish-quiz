@@ -268,57 +268,79 @@
 /* ---------- 商品データ（Coeur de Fleur Nail Color 系 43点） ---------- */
 const IMG_BASE = "https://makeshop-multi-images.akamaized.net/cjms/itemimages/";
 const RAW = [
-  ["KUZUNOHANA ISAMU","000000000216_DhS8Mee.jpg","normal"],
-  ["ENOKOROGUSA MEZURU","000000000215_pIQJSyn.jpg","normal"],
-  ["MIZUKAZURA KIKAN","000000000213_dRuM9PB.jpg","shunkan"],
-  ["HIZAKARI GAJUN","000000000208_NoGDYFE.jpg","normal"],
-  ["KOSHITAYAMI SHOUSHA","000000000209_y48AnY1.jpg","normal"],
-  ["HOOZUKI ITOOSHI","000000000210_qb5sH2x.jpg","normal"],
-  ["HANAKINPOUGE USUGUMO","000000000183_Gz8VmSS.jpg","beni"],
-  ["TENJIKUBOTAN OBOROZUKUYO","000000000182_hRPfYCk.jpg","beni"],
-  ["BARA USUZUKU","000000000181_Z7yiIZ7.jpg","beni"],
-  ["TENJIKUAOI NANATSUBOSHI","000000000180_3AYs2SU.jpg","beni"],
-  ["ITESORA TAIKAN","000000000176_XwUcehH.jpg","shunkan"],
-  ["NEKOYANAGI KIYORA","000000000033_MAi7DJ2.jpg","normal"],
-  ["KONOHA SHIORASHI","000000000032_2nCXaTt.jpg","normal"],
-  ["KONAYUKI KIRAYAKA","000000000034_W5Zj2Cv.jpg","normal"],
-  ["HIIRAGI DATESUGATA","000000000035_dsVAqui.jpg","normal"],
-  ["SHIINOMI TAOYAME","000000000029_0BggiJp.jpg","normal"],
-  ["MOMIJITSUTA SEIEN","000000000030_mLGfjku.jpg","normal"],
-  ["KOSUMOSU SENSEN","000000000031_ZQp37qV.jpg","normal"],
-  ["KINMOKUSEI KAZENOSUGATA","000000000028_wxxGBKf.jpg","normal"],
-  ["SARUSUBERI NATSUSUGATA","000000000010_1SZNQlU.jpg","normal"],
-  ["NATSUSORA ENTEN","000000000011_i9bhOQK.jpg","normal"],
-  ["NATSUKUMO EIEI","000000000012_GDmWq3r.jpg","normal"],
-  ["HIMAWARI OMOISOMERU","000000000013_SGOZnrg.jpg","normal"],
-  ["TSUKUSHINBO TENREI","000000000047_Kdc1V4p.jpg","normal"],
-  ["SHIBAZAKURA KAREN","000000000045_rxYvEyg.jpg","normal"],
-  ["RURIKARAKUSA ENZEN","000000000044_nwtL70q.jpg","normal"],
-  ["HANAMIZUKI ZENBI","000000000046_znNhYiK.jpg","normal"],
-  ["WATAHANASHIBE SHITOYAKA","000000000009_S8ATIOm.jpg","normal"],
-  ["SHAKUYAKU TANREI","000000000005_sur5rDo.jpg","normal"],
-  ["SAKURA SOSO","000000000007_fSSE2dn.jpg","normal"],
-  ["NADESHIKO YASASUGATA","000000000004_hG2JmHK.jpg","normal"],
-  ["MOMO URUWASHI","000000000003_OJVMiAG.jpg","normal"],
-  ["KOUBAI YUUGA","000000000001_RPqhN9W.jpg","normal"],
-  ["KOBUSHI KIYORAKA","000000000008_pnYQxcn.jpg","normal"],
-  ["HAGI TAOYAKA","000000000006_9kkmOWf.jpg","normal"],
-  ["BOTAN ADEYAKA","000000000002_ukbBpLN.jpg","normal"],
-  ["TSURARA IKAN","000000000103_kuq4CL3.jpg","shunkan"],
-  ["KUSATSUYU FUUSHU","000000000102_CRvMNlQ.jpg","shunkan"],
-  ["SEIRAN YASHU","000000000101_zCFdyLA.jpg","shunkan"],
-  ["SAMIDARE ENKA","000000000100_6Y66L1F.jpg","shunkan"],
+  ["KUZUNOHANA ISAMU","000000000216_DhS8Mee.jpg","normal","orange"],
+  ["ENOKOROGUSA MEZURU","000000000215_pIQJSyn.jpg","normal","blue"],
+  ["MIZUKAZURA KIKAN","000000000213_dRuM9PB.jpg","shunkan","shimmer"],
+  ["HIZAKARI GAJUN","000000000208_NoGDYFE.jpg","normal","shimmer"],
+  ["KOSHITAYAMI SHOUSHA","000000000209_y48AnY1.jpg","normal","orange"],
+  ["HOOZUKI ITOOSHI","000000000210_qb5sH2x.jpg","normal","orange"],
+  ["HANAKINPOUGE USUGUMO","000000000183_Gz8VmSS.jpg","beni","pink"],
+  ["TENJIKUBOTAN OBOROZUKUYO","000000000182_hRPfYCk.jpg","beni","red"],
+  ["BARA USUZUKU","000000000181_Z7yiIZ7.jpg","beni","pink"],
+  ["TENJIKUAOI NANATSUBOSHI","000000000180_3AYs2SU.jpg","beni","red"],
+  ["ITESORA TAIKAN","000000000176_XwUcehH.jpg","shunkan","shimmer"],
+  ["NEKOYANAGI KIYORA","000000000033_MAi7DJ2.jpg","normal","beige"],
+  ["KONOHA SHIORASHI","000000000032_2nCXaTt.jpg","normal","beige"],
+  ["KONAYUKI KIRAYAKA","000000000034_W5Zj2Cv.jpg","normal","shimmer"],
+  ["HIIRAGI DATESUGATA","000000000035_dsVAqui.jpg","normal","red"],
+  ["SHIINOMI TAOYAME","000000000029_0BggiJp.jpg","normal","orange"],
+  ["MOMIJITSUTA SEIEN","000000000030_mLGfjku.jpg","normal","orange"],
+  ["KOSUMOSU SENSEN","000000000031_ZQp37qV.jpg","normal","purple"],
+  ["KINMOKUSEI KAZENOSUGATA","000000000028_wxxGBKf.jpg","normal","yellow"],
+  ["SARUSUBERI NATSUSUGATA","000000000010_1SZNQlU.jpg","normal","red"],
+  ["NATSUSORA ENTEN","000000000011_i9bhOQK.jpg","normal","purple"],
+  ["NATSUKUMO EIEI","000000000012_GDmWq3r.jpg","normal","blue"],
+  ["HIMAWARI OMOISOMERU","000000000013_SGOZnrg.jpg","normal","orange"],
+  ["TSUKUSHINBO TENREI","000000000047_Kdc1V4p.jpg","normal","beige"],
+  ["SHIBAZAKURA KAREN","000000000045_rxYvEyg.jpg","normal","pink"],
+  ["RURIKARAKUSA ENZEN","000000000044_nwtL70q.jpg","normal","blue"],
+  ["HANAMIZUKI ZENBI","000000000046_znNhYiK.jpg","normal","beige"],
+  ["WATAHANASHIBE SHITOYAKA","000000000009_S8ATIOm.jpg","normal","shimmer"],
+  ["SHAKUYAKU TANREI","000000000005_sur5rDo.jpg","normal","pink"],
+  ["SAKURA SOSO","000000000007_fSSE2dn.jpg","normal","pink"],
+  ["NADESHIKO YASASUGATA","000000000004_hG2JmHK.jpg","normal","pink"],
+  ["MOMO URUWASHI","000000000003_OJVMiAG.jpg","normal","pink"],
+  ["KOUBAI YUUGA","000000000001_RPqhN9W.jpg","normal","pink"],
+  ["KOBUSHI KIYORAKA","000000000008_pnYQxcn.jpg","normal","beige"],
+  ["HAGI TAOYAKA","000000000006_9kkmOWf.jpg","normal","pink"],
+  ["BOTAN ADEYAKA","000000000002_ukbBpLN.jpg","normal","red"],
+  ["TSURARA IKAN","000000000103_kuq4CL3.jpg","shunkan","shimmer"],
+  ["KUSATSUYU FUUSHU","000000000102_CRvMNlQ.jpg","shunkan","shimmer"],
+  ["SEIRAN YASHU","000000000101_zCFdyLA.jpg","shunkan","shimmer"],
+  ["SAMIDARE ENKA","000000000100_6Y66L1F.jpg","shunkan","shimmer"],
 ];
-const PRODUCTS = RAW.map(([kw,img,series])=>({
+const PRODUCTS = RAW.map(([kw,img,series,group])=>({
   kw,
   img: IMG_BASE + img,
   series,
+  group,
   fullName: series==="beni"
       ? `【${kw}】BENI Coeur de Fleur Nail Color`
     : series==="shunkan"
       ? `【${kw}】-SHUNKAN Series- Coeur de Fleur Nail Color`
       : `【${kw}】Coeur de Fleur Nail Color`,
 }));
+
+/* ---------- 似た色のグループから紛らわしい選択肢を選ぶ ---------- */
+const GROUP_ADJACENT = {
+  red: ["pink","orange"],
+  orange: ["red","yellow","beige"],
+  pink: ["red","purple","beige"],
+  beige: ["orange","pink","shimmer"],
+  purple: ["pink","blue"],
+  blue: ["purple","shimmer"],
+  yellow: ["orange","beige"],
+  shimmer: ["beige","blue"],
+};
+function pickDistractors(correct, usable){
+  const others = usable.filter(p=>p.kw!==correct.kw);
+  const sameGroup = others.filter(p=>p.group===correct.group);
+  const adj = GROUP_ADJACENT[correct.group] || [];
+  const related = others.filter(p=>p.group!==correct.group && adj.includes(p.group));
+  const rest = others.filter(p=>p.group!==correct.group && !adj.includes(p.group));
+  const ranked = [...shuffle(sameGroup), ...shuffle(related), ...shuffle(rest)];
+  return ranked.slice(0,3);
+}
 
 /* ---------- 合言葉ロック ---------- */
 // パスワードそのものではなく SHA-256 ハッシュを埋め込んで比較する
@@ -407,7 +429,7 @@ function buildQuiz(list){
   const n = chosenCount===0 ? pool.length : Math.min(chosenCount, pool.length);
   const targets = list || pool.slice(0, n);
   quiz = targets.map(correct=>{
-    const distractors = shuffle(usable.filter(p=>p.kw!==correct.kw)).slice(0,3);
+    const distractors = pickDistractors(correct, usable);
     const options = shuffle([correct, ...distractors]);
     return { correct, options };
   });
