@@ -688,51 +688,51 @@ const LIPSTICKS = RAW_LIPSTICK.map(([code,kanji,romaji,season,hex,typical,reason
 // 実在の人物ではなく、雰囲気作りのための架空の来店客イメージとして使用（診断根拠は色スワッチ側）。
 const PHOTO_BASE = "https://vflwqueicashzcwofxgh.supabase.co/storage/v1/object/public/personal_color_free-picture/";
 const PERSONA_RAW = [
-  // [肌の色hex, 髪の色hex, 瞳の色hex, 特徴の説明文, 正解シーズン, 診断理由, おすすめ商品コード, 写真ファイル名]
+  // [肌の色hex, 髪の色hex, 瞳の色hex, 特徴の説明文, 正解シーズン, 診断理由, おすすめ商品コード, 写真ファイル名の配列]
 
   // ── 春タイプ ──
   ["#f3c9a0","#a86b3c","#8a5a2b","肌は黄みのあるアイボリーで血色はピーチ系。日焼けすると小麦色になりやすい。髪は明るめのゴールドブラウン、瞳は明るいヘーゼル。","spring",
-   "黄みのある肌、健康的に焼けやすい傾向、明るいゴールドブラウンの髪と瞳から、暖色系で明るく鮮やかな春タイプと判断できます。","B1","persona-spring-1.jpg"],
+   "黄みのある肌、健康的に焼けやすい傾向、明るいゴールドブラウンの髪と瞳から、暖色系で明るく鮮やかな春タイプと判断できます。","B1",["persona-spring-1.jpg","persona-spring-1-b.jpg"]],
   ["#f0c4a5","#c98a4a","#9c6a35","肌は黄みが強くつやのある印象。ゴールドのアクセサリーがよく似合う。髪は明るい栗色、瞳は明るいブラウン。","spring",
-   "黄み肌でゴールドが似合うこと、明るい栗色の髪と瞳から、明るく鮮やかな暖色系＝春タイプと判断できます。","B3","persona-spring-2.jpg"],
+   "黄み肌でゴールドが似合うこと、明るい栗色の髪と瞳から、明るく鮮やかな暖色系＝春タイプと判断できます。","B3",["persona-spring-2.jpg","persona-spring-2-b.jpg"]],
   ["#f5cdae","#8a5a30","#6b4423","手首の血管が緑がかって見えるイエベ肌。日光に当たると健康的に焼ける。髪と瞳はやわらかいブラウン系。","spring",
-   "血管が緑がかって見える典型的なイエベで、髪・瞳も明るめの暖色ブラウンのため、春タイプと判断できます。","B5","persona-spring-3.jpg"],
+   "血管が緑がかって見える典型的なイエベで、髪・瞳も明るめの暖色ブラウンのため、春タイプと判断できます。","B5",["persona-spring-3.jpg","persona-spring-3-b.jpg"]],
   ["#f7d2b0","#b9793e","#7a5228","肌は明るくつやがあり黄みを感じる。頬の血色はコーラル系。髪は明るいブラウン、瞳も明るめ。","spring",
-   "黄みのある明るい肌とコーラル系の血色、明るいブラウンの髪・瞳から、明るく鮮やかな春タイプと判断できます。","B9","persona-spring-4.jpg"],
+   "黄みのある明るい肌とコーラル系の血色、明るいブラウンの髪・瞳から、明るく鮮やかな春タイプと判断できます。","B9",["persona-spring-4.jpg","persona-spring-4-b.jpg"]],
 
   // ── 夏タイプ ──
   ["#f0d9d0","#4a3a35","#4a3530","肌は青み寄りで色白、血色はピンク系。日焼けすると赤くなりやすい。髪はアッシュブラウン、瞳は柔らかいダークブラウン。","summer",
-   "青みのある色白の肌、日焼けで赤くなりやすい性質、アッシュ系の髪から、寒色系で柔らかい夏タイプと判断できます。","A6","persona-summer-1.jpg"],
+   "青みのある色白の肌、日焼けで赤くなりやすい性質、アッシュ系の髪から、寒色系で柔らかい夏タイプと判断できます。","A6",["persona-summer-1.jpg","persona-summer-1-b.jpg"]],
   ["#eddbd5","#5c4a42","#574540","手首の血管が青紫っぽいブルベ肌。シルバーのアクセサリーがなじみやすい。髪と瞳はやわらかい落ち着いた色。","summer",
-   "血管が青紫に見える典型的なブルベで、シルバーが似合うことからも、柔らかい寒色系＝夏タイプと判断できます。","A2","persona-summer-2.jpg"],
+   "血管が青紫に見える典型的なブルベで、シルバーが似合うことからも、柔らかい寒色系＝夏タイプと判断できます。","A2",["persona-summer-2.jpg","persona-summer-2-b.jpg"]],
   ["#f2ddd8","#6b5850","#5c4a44","肌はピンクがかった色白で透明感がある。頬の血色は控えめなローズ系。髪と瞳はやわらかいグレイッシュブラウン。","summer",
-   "ピンクがかった透明感のある肌とグレイッシュな髪・瞳の色みから、柔らかい寒色系＝夏タイプと判断できます。","A5","persona-summer-3.jpg"],
+   "ピンクがかった透明感のある肌とグレイッシュな髪・瞳の色みから、柔らかい寒色系＝夏タイプと判断できます。","A5",["persona-summer-3.jpg","persona-summer-3-b.jpg"]],
   ["#efd6d8","#3f322e","#3a2d29","色白で肌に青みがあり、コントラストは穏やか。日光には弱く赤くなりやすいタイプ。髪と瞳は柔らかいダークトーン。","summer",
-   "青み肌で日焼けに弱く、肌・髪・瞳のコントラストも穏やかなため、柔らかい寒色系＝夏タイプと判断できます。","A9","persona-summer-4.jpg"],
+   "青み肌で日焼けに弱く、肌・髪・瞳のコントラストも穏やかなため、柔らかい寒色系＝夏タイプと判断できます。","A9",["persona-summer-4.jpg","persona-summer-4-b.jpg"]],
 
   // ── 秋タイプ ──
   ["#d9a878","#5a3a20","#4a2e18","肌は黄みが強くオリーブがかった印象。日光に当たると深く小麦色に焼ける。髪は深いブラウン、瞳もダークブラウン。","autumn",
-   "黄みの強いオリーブ肌と深く焼ける傾向、深みのあるブラウンの髪・瞳から、落ち着いた暖色系＝秋タイプと判断できます。","C1","persona-autumn-1.jpg"],
+   "黄みの強いオリーブ肌と深く焼ける傾向、深みのあるブラウンの髪・瞳から、落ち着いた暖色系＝秋タイプと判断できます。","C1",["persona-autumn-1.jpg","persona-autumn-1-b.jpg"]],
   ["#d3a074","#4a2f18","#3a2412","肌はしっかり黄みがあり血色は控えめ。ゴールドのアクセサリーがなじむ。髪と瞳は深いこっくりとしたブラウン。","autumn",
-   "黄み肌でゴールドが似合い、髪・瞳が深いブラウンであることから、落ち着いた暖色系＝秋タイプと判断できます。","C3","persona-autumn-2.jpg"],
+   "黄み肌でゴールドが似合い、髪・瞳が深いブラウンであることから、落ち着いた暖色系＝秋タイプと判断できます。","C3",["persona-autumn-2.jpg","persona-autumn-2-b.jpg"]],
   ["#d8a97e","#5c3d22","#452c16","肌は健康的な黄みのある小麦色。日焼けあとが残りやすい。髪は赤みのあるダークブラウン、瞳も深めのブラウン。","autumn",
-   "黄みのある小麦色の肌と赤みを帯びた深い髪色から、落ち着いた暖色系＝秋タイプと判断できます。","C5","persona-autumn-3.jpg"],
+   "黄みのある小麦色の肌と赤みを帯びた深い髪色から、落ち着いた暖色系＝秋タイプと判断できます。","C5",["persona-autumn-3.jpg","persona-autumn-3-b.jpg"]],
   ["#d6a57c","#503420","#402a16","肌はマットで黄み寄り、血色は控えめ。手首の血管は緑がかって見える。髪と瞳は深く落ち着いたブラウン。","autumn",
-   "血管が緑がかって見える黄み肌と、深く落ち着いた髪・瞳の色みから、秋タイプと判断できます。","C9","persona-autumn-4.jpg"],
+   "血管が緑がかって見える黄み肌と、深く落ち着いた髪・瞳の色みから、秋タイプと判断できます。","C9",["persona-autumn-4.jpg","persona-autumn-4-b.jpg"]],
 
   // ── 冬タイプ ──
   ["#f2e0dc","#1a1512","#1a1512","肌は青みのある陶器肌で、髪はつやのある黒髪。瞳も濃いダークブラウンで、肌と髪・瞳のコントラストがはっきりしている。","winter",
-   "青み肌に加えて黒髪・濃い瞳とのコントラストが強いため、はっきりした寒色系＝冬タイプと判断できます。","D1","persona-winter-1.jpg"],
+   "青み肌に加えて黒髪・濃い瞳とのコントラストが強いため、はっきりした寒色系＝冬タイプと判断できます。","D1",["persona-winter-1.jpg","persona-winter-1-b.jpg"]],
   ["#ecdcd6","#201a16","#201a16","色白で青みのある肌。シルバーのアクセサリーが映える。髪と瞳は濃いブラックブラウンで、顔立ちがはっきり見える。","winter",
-   "青み肌でシルバーが似合い、濃い髪・瞳とのコントラストが強いことから、冬タイプと判断できます。","D4","persona-winter-2.jpg"],
+   "青み肌でシルバーが似合い、濃い髪・瞳とのコントラストが強いことから、冬タイプと判断できます。","D4",["persona-winter-2.jpg","persona-winter-2-b.jpg"]],
   ["#dcc6be","#191410","#191410","肌はやや小麦色だが青みを感じる。髪は漆黒に近く、瞳も真っ黒に近いダークブラウン。全体的にコントラストが強い。","winter",
-   "青みを感じる肌と、漆黒に近い髪・瞳との強いコントラストから、冬タイプと判断できます。","D9","persona-winter-3.jpg"],
+   "青みを感じる肌と、漆黒に近い髪・瞳との強いコントラストから、冬タイプと判断できます。","D9",["persona-winter-3.jpg","persona-winter-3-b.jpg"]],
   ["#eeded9","#23201e","#23201e","色白で青み寄りの肌。日光に当たると赤くなりやすい。髪と瞳は濃く、肌との明暗差がはっきりしている。","winter",
-   "青み寄りの色白肌と、濃い髪・瞳との明暗差がはっきりしていることから、冬タイプと判断できます。","D7","persona-winter-4.jpg"],
+   "青み寄りの色白肌と、濃い髪・瞳との明暗差がはっきりしていることから、冬タイプと判断できます。","D7",["persona-winter-4.jpg","persona-winter-4-b.jpg"]],
 ];
-const PERSONAS = PERSONA_RAW.map(([skin,hair,eye,desc,season,seasonReason,recommendedCode,photoFile])=>({
+const PERSONAS = PERSONA_RAW.map(([skin,hair,eye,desc,season,seasonReason,recommendedCode,photoFiles])=>({
   skin, hair, eye, desc, season, seasonReason,
-  photo: PHOTO_BASE + photoFile,
+  photos: photoFiles.map(f=>PHOTO_BASE + f),
   recommended: LIPSTICKS.find(p=>p.code===recommendedCode),
 }));
 
@@ -884,7 +884,8 @@ function renderQuestion(){
     const photoImg = $("#persona-photo");
     photoWrap.classList.remove("hidden");
     photoImg.onerror = () => { photoWrap.classList.add("hidden"); };
-    photoImg.src = cur.item.photo;
+    const photos = cur.item.photos;
+    photoImg.src = photos[Math.random()*photos.length|0];
 
     const productWrap = $("#q-choices-product");
     cur.productOptions.forEach(opt=>{
