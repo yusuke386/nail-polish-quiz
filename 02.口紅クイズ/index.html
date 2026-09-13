@@ -241,7 +241,7 @@
         <button data-difficulty="extreme" aria-pressed="false">最上級</button>
         <button data-difficulty="oni" aria-pressed="false">鬼</button>
       </div>
-      <div class="best" style="margin-top:6px">通常:コード表示／上級:唇写真のみ／最上級:唇写真＋似た色の選択肢／鬼:漢字を入力回答</div>
+      <div class="best" style="margin-top:6px">通常:コード表示／上級:写真のみ／最上級:写真＋似た色の選択肢／鬼:漢字を入力回答</div>
       <div class="field-label">出題数</div>
       <div class="seg" id="seg-count">
         <button data-count="10" aria-pressed="true">10問</button>
@@ -396,7 +396,7 @@ async function tryUnlock(){
 const BEST_KEY = "fd_quiz_best_v1";
 let usableByMode = { normal:null, hard:null }; // 画像読み込みに成功した商品（写真の種類ごと）
 let difficulty = "normal"; // "normal" | "hard" | "extreme" | "oni"
-function photoModeFor(diff){ return diff === "normal" ? "normal" : "hard"; } // hard/extreme/oniは同じ唇写真を使う
+function photoModeFor(diff){ return diff === "normal" ? "normal" : "hard"; } // hard/extreme/oniは同じ写真を使う
 const DIFFICULTY_LABEL = { normal:"通常", hard:"上級", extreme:"最上級", oni:"鬼" };
 let chosenCount = 10;     // 0 = 全部
 let quiz = [];            // 出題リスト
@@ -503,9 +503,9 @@ function renderQuestion(){
 
   const hints = {
     normal: "このコードの商品名とシリーズ番号は？（タップで画像拡大）",
-    hard: "この唇写真から商品名とシリーズ番号は？（タップで画像拡大）",
-    extreme: "この唇写真から商品名とシリーズ番号は？似た色に注意（タップで画像拡大）",
-    oni: "この唇写真の商品名を漢字で入力してください（タップで画像拡大）",
+    hard: "この写真から商品名とシリーズ番号は？（タップで画像拡大）",
+    extreme: "この写真から商品名とシリーズ番号は？似た色に注意（タップで画像拡大）",
+    oni: "この写真の商品名を漢字で入力してください（タップで画像拡大）",
   };
   $("#q-hint").textContent = hints[difficulty];
 
