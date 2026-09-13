@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>パーソナルカラー診断トレーニング</title>
+<style>
+  :root{
+    --bg:#faf5f2;
+    --card:#ffffff;
+    --ink:#3b333a;
+    --ink-soft:#8a7f85;
+    --line:#ece2dc;
+    --accent:#b47268;
+    --accent-soft:#f3e4e0;
+    --ok:#3f8a6e;
+    --ok-soft:#e3f1ea;
+    --ng:#c05a54;
+    --ng-soft:#f7e3e1;
+    --shadow:0 6px 24px rgba(90,60,55,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    line-height:1.6;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    min-height:100dvh;
+    padding:24px 18px calc(28px + env(safe-area-inset-bottom));
+    display:flex;
+    flex-direction:column;
+  }
+  h1{
+    font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:.04em;
+    margin:0 0 4px;
+  }
+  .brand{
+    font-size:12px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:18px;
+  }
+  .lead{color:var(--ink-soft);font-size:14px;margin:0 0 22px}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    padding:22px;
+  }
+  .screen{flex:1;display:flex;flex-direction:column;justify-content:center}
+  #screen-quiz{justify-content:flex-start;padding-top:8px}
+  .hidden{display:none!important}
+
+  /* start */
+  .field-label{font-size:13px;color:var(--ink-soft);margin:18px 0 8px}
+  .seg{display:flex;gap:8px}
+  .seg button{
+    flex:1;
+    padding:12px 0;
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:12px;
+    font-size:14px;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .seg button[aria-pressed="true"]{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+    font-weight:600;
+  }
+  .btn{
+    display:block;width:100%;
+    padding:15px 0;
+    border:none;border-radius:14px;
+    background:var(--accent);color:#fff;
+    font-size:16px;font-weight:600;letter-spacing:.04em;
+    cursor:pointer;
+    margin-top:22px;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+  .best{font-size:13px;color:var(--ink-soft);margin-top:14px;text-align:center}
+
+  /* lock */
+  .text-input{
+    display:block;width:100%;
+    padding:13px 14px;
+    border:1px solid var(--line);border-radius:12px;
+    font-size:16px;color:var(--ink);
+    background:#fff;
+  }
+  .text-input:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .lock-error{min-height:20px;font-size:13px;color:var(--ng);margin-top:10px;text-align:center}
+
+  /* quiz */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:13px;color:var(--ink-soft);margin-bottom:6px;
+  }
+  .bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:8px}
+  .bar > i{display:block;height:100%;background:var(--accent);transition:width .3s ease}
+
+  .qcard{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);padding:18px;
+    font-size:15px;font-weight:600;text-align:center;margin-bottom:4px;
+  }
+
+  .persona{margin-bottom:4px}
+  .swatch-row{display:flex;justify-content:center;gap:18px;margin:4px 0 10px}
+  .swatch-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .swatch{width:60px;height:60px;border-radius:50%;border:1px solid var(--line);box-shadow:var(--shadow)}
+  .swatch-label{font-size:11px;color:var(--ink-soft)}
+  .persona-desc{
+    font-size:13px;color:var(--ink);text-align:center;line-height:1.6;
+    padding:0 6px;margin-bottom:6px;
+  }
+
+  .q-hint{text-align:center;font-size:12px;color:var(--ink-soft);margin:5px 0 5px}
+
+  .choices{display:flex;flex-direction:column;gap:5px}
+  .choice{
+    width:100%;text-align:left;
+    padding:9px 12px;
+    border:1px solid var(--line);border-radius:12px;
+    background:#fff;color:var(--ink);
+    font-size:14px;letter-spacing:.01em;line-height:1.3;
+    cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+  }
+  .choice .num{
+    flex:none;width:19px;height:19px;border-radius:6px;
+    background:var(--accent-soft);color:var(--accent);
+    font-size:11px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .choice .chip{
+    flex:none;width:16px;height:16px;border-radius:50%;
+    border:1px solid rgba(0,0,0,.15);
+  }
+  .choice[disabled]{cursor:default}
+  .choice.selected{border-color:var(--accent);background:var(--accent-soft)}
+  .choice.correct{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:600}
+  .choice.wrong{background:var(--ng-soft);border-color:var(--ng);color:var(--ng);font-weight:600}
+
+  /* シミュレーションモード：左＝おすすめの色（長い商品名）、右＝シーズン（短い単語） */
+  .answer-row{display:flex;gap:8px;align-items:flex-start}
+  .col-name{flex:1 1 auto;min-width:0}
+  .col-series{flex:0 0 82px}
+  .col-label{font-size:11px;color:var(--ink-soft);margin-bottom:4px}
+  .choice.season{
+    justify-content:center;text-align:center;
+    padding:9px 4px;font-size:12px;font-weight:600;line-height:1.25;
+  }
+
+  .feedback{margin-top:6px;text-align:center;min-height:20px;font-size:13px;font-weight:600}
+  .feedback.ok{color:var(--ok)}
+  .feedback.ng{color:var(--ng)}
+  .fullname{margin-top:8px;text-align:left;font-size:12px;color:var(--ink-soft);font-weight:400;line-height:1.7}
+  .fullname b{color:var(--ink);font-weight:600}
+  #btn-next{margin-top:8px}
+
+  /* result */
+  .score-big{
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+    font-size:44px;text-align:center;margin:6px 0 0;
+  }
+  .score-big small{font-size:20px;color:var(--ink-soft)}
+  .score-sub{text-align:center;color:var(--ink-soft);font-size:14px;margin-bottom:8px}
+  .review-title{font-size:13px;color:var(--ink-soft);margin:22px 0 10px}
+  .miss{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+  .swatch-mini{width:36px;height:36px;border-radius:50%;flex:none;border:1px solid var(--line);background:var(--accent-soft)}
+  .miss .m-kw{font-size:14px;font-weight:600}
+  .miss .m-full{font-size:11px;color:var(--ink-soft)}
+  .allright{text-align:center;color:var(--ok);font-weight:600;margin-top:18px}
+
+  .foot{margin-top:22px;text-align:center;font-size:11px;color:var(--ink-soft);letter-spacing:.03em}
+  .switch-link{display:block;text-align:center;margin-top:10px;font-size:12px;color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== LOCK ===== -->
+  <section id="screen-lock" class="screen">
+    <div class="brand">PERSONAL COLOR</div>
+    <h1>診断力トレーニング</h1>
+    <p class="lead">合言葉を入力してください。</p>
+    <div class="card">
+      <input type="password" class="text-input" id="lock-input" placeholder="合言葉" autocomplete="off">
+      <button class="btn" id="btn-unlock">入る</button>
+      <div class="lock-error" id="lock-error"></div>
+    </div>
+  </section>
+
+  <!-- ===== START ===== -->
+  <section id="screen-start" class="screen hidden">
+    <div class="brand">PERSONAL COLOR</div>
+    <h1>診断力トレーニング</h1>
+    <p class="lead">肌・髪・瞳の色から4シーズン診断法を練習します。新人研修用のテスト。</p>
+    <div class="card">
+      <div class="field-label">モード</div>
+      <div class="seg" id="seg-mode">
+        <button data-mode="knowledge" aria-pressed="true">知識クイズ</button>
+        <button data-mode="simulation" aria-pressed="false">接客シミュレーション</button>
+      </div>
+      <div class="best" style="margin-top:6px" id="mode-desc">知識クイズ：4シーズン診断法の基礎知識を4択で確認します。</div>
+
+      <div id="count-wrap">
+        <div class="field-label">出題数</div>
+        <div class="seg" id="seg-count">
+          <button data-count="10" aria-pressed="true">10問</button>
+          <button data-count="20" aria-pressed="false">20問</button>
+          <button data-count="0" aria-pressed="false">全部</button>
+        </div>
+      </div>
+
+      <button class="btn" id="btn-start">はじめる</button>
+      <div class="best" id="best-line"></div>
+    </div>
+    <a class="switch-link" href="../index.html">← 別のクイズを選ぶ</a>
+  </section>
+
+  <!-- ===== QUIZ ===== -->
+  <section id="screen-quiz" class="screen hidden">
+    <div class="topbar">
+      <span id="q-progress">問題 1 / 10</span>
+      <span id="q-score">正解 0</span>
+    </div>
+    <div class="bar"><i id="q-bar" style="width:0%"></i></div>
+
+    <div class="qcard hidden" id="q-question-text"></div>
+
+    <div class="persona hidden" id="q-persona">
+      <div class="swatch-row">
+        <div class="swatch-item"><div class="swatch" id="sw-skin"></div><div class="swatch-label">肌</div></div>
+        <div class="swatch-item"><div class="swatch" id="sw-hair"></div><div class="swatch-label">髪</div></div>
+        <div class="swatch-item"><div class="swatch" id="sw-eye"></div><div class="swatch-label">瞳</div></div>
+      </div>
+      <div class="persona-desc" id="persona-desc"></div>
+    </div>
+
+    <div class="q-hint" id="q-hint"></div>
+
+    <div class="choices" id="q-choices-single"></div>
+
+    <div class="answer-row hidden" id="answer-row">
+      <div class="col-name">
+        <div class="col-label">おすすめの色</div>
+        <div class="choices" id="q-choices-product"></div>
+      </div>
+      <div class="col-series">
+        <div class="col-label">シーズン</div>
+        <div class="choices" id="q-choices-season"></div>
+      </div>
+    </div>
+
+    <div class="feedback" id="q-feedback"></div>
+    <div class="fullname" id="q-fullname"></div>
+
+    <button class="btn hidden" id="btn-next">次へ</button>
+  </section>
+
+  <!-- ===== RESULT ===== -->
+  <section id="screen-result" class="screen hidden">
+    <div class="brand">Result</div>
+    <div class="card">
+      <div class="score-big" id="r-score">0<small> / 10</small></div>
+      <div class="score-sub" id="r-sub"></div>
+      <div id="r-review"></div>
+      <button class="btn" id="btn-retry-miss">間違えた問題だけ復習</button>
+      <button class="btn ghost" id="btn-again">最初からもう一度</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ---------- 知識クイズの問題データ（一般的な4シーズン・パーソナルカラー診断法の基礎知識） ---------- */
+// すべて正解を選択肢の先頭(index 0)に書いておけばよい（出題時にシャッフルする）
+const KNOWLEDGE_RAW = [
+  ["イエベ／ブルベの判断でよく見る部位は？",
+   ["手首の血管の色","唇の厚み","眉の形","爪の大きさ"], 0,
+   "手首の静脈が緑がかって見えるとイエベ、青紫に見えるとブルベの傾向があります。"],
+  ["手首の血管が青紫っぽく見える場合、一般的にどちらの傾向が強い？",
+   ["ブルベ（寒色系）","イエベ（暖色系）","春タイプ","秋タイプ"], 0,
+   "血管が青紫に見えるのは血色に青みが強いブルベ（寒色系）の特徴です。"],
+  ["手首の血管が緑がかって見える場合、一般的にどちらの傾向が強い？",
+   ["イエベ（暖色系）","ブルベ（寒色系）","夏タイプ","冬タイプ"], 0,
+   "血管が緑がかって見えるのは黄みが強いイエベ（暖色系）の特徴です。"],
+  ["ゴールドのアクセサリーが肌になじみやすいのは？",
+   ["イエベ（暖色系）","ブルベ（寒色系）","どちらのタイプも同じ","診断とは無関係"], 0,
+   "ゴールドは黄みのある暖色系＝イエベの肌になじみやすいとされます。"],
+  ["シルバーのアクセサリーが肌になじみやすいのは？",
+   ["ブルベ（寒色系）","イエベ（暖色系）","どちらのタイプも同じ","診断とは無関係"], 0,
+   "シルバーは青みのある寒色系＝ブルベの肌になじみやすいとされます。"],
+  ["4シーズンのうち「暖色系（イエベ）」に分類されるのはどれ？",
+   ["春と秋","夏と冬","春と冬","夏と秋"], 0,
+   "春・秋は黄みを含む暖色系（イエベ）、夏・冬は青みを含む寒色系（ブルベ）に分類されます。"],
+  ["4シーズンのうち「寒色系（ブルベ）」に分類されるのはどれ？",
+   ["夏と冬","春と秋","春と夏","秋と冬"], 0,
+   "夏・冬は青みを含む寒色系（ブルベ）に分類されます。"],
+  ["春タイプの色の特徴として最も近いのは？",
+   ["黄みがかった明るく鮮やかな色","青みがかった柔らかく優しい色","黄みがかった深みのある落ち着いた色","青みがかったはっきりした色"], 0,
+   "春タイプは明るくクリアで鮮やかな暖色系が得意です。"],
+  ["夏タイプの色の特徴として最も近いのは？",
+   ["青みがかった柔らかく優しい色","黄みがかった明るく鮮やかな色","黄みがかった深みのある落ち着いた色","青みがかったはっきりした色"], 0,
+   "夏タイプは青みを含む柔らかく優しいトーンが得意です。"],
+  ["秋タイプの色の特徴として最も近いのは？",
+   ["黄みがかった深みのある落ち着いた色","青みがかった柔らかく優しい色","黄みがかった明るく鮮やかな色","青みがかったはっきりした色"], 0,
+   "秋タイプは黄みを含む深みのある落ち着いたトーンが得意です。"],
+  ["冬タイプの色の特徴として最も近いのは？",
+   ["青みがかった鮮やかまたは深い色","黄みがかった明るく鮮やかな色","青みがかった柔らかく優しい色","黄みがかった深みのある落ち着いた色"], 0,
+   "冬タイプは青みを含む、鮮やかまたは深いはっきりした色が得意です。"],
+  ["日光に当たると小麦色に健康的に焼けやすい肌は、どちらの傾向が多い？",
+   ["イエベ（暖色系）","ブルベ（寒色系）","タイプによる差はない","髪の色で決まる"], 0,
+   "黄み寄りの肌（イエベ）は日焼けすると小麦色になりやすい傾向があります。"],
+  ["日光に当たると赤くなりやすく、小麦色にはあまり焼けない肌は、どちらの傾向が多い？",
+   ["ブルベ（寒色系）","イエベ（暖色系）","タイプによる差はない","瞳の色で決まる"], 0,
+   "青み寄りの肌（ブルベ）は日焼けで赤くなりやすい傾向があります。"],
+  ["真っ白（ピュアホワイト）の服を着たとき顔色が明るく見えやすいのは？",
+   ["ブルベの傾向が多い","イエベの傾向が多い","どちらも変わらない","季節によって変わる"], 0,
+   "真っ白は青みのある寒色系＝ブルベの肌になじみやすい色です。"],
+  ["アイボリーやクリーム色の服を着たとき顔色になじみやすいのは？",
+   ["イエベの傾向が多い","ブルベの傾向が多い","どちらも変わらない","髪型によって変わる"], 0,
+   "アイボリーやクリーム色は黄みのある暖色系＝イエベの肌になじみやすい色です。"],
+  ["春タイプに似合う色として適切なのは？",
+   ["コーラルピンク","ローズピンク","レンガ色（テラコッタ）","ロイヤルブルー"], 0,
+   "春タイプは黄みを含む明るいコーラルピンクのような色が得意です。"],
+  ["秋タイプに似合う色として適切なのは？",
+   ["テラコッタ（レンガ色）","ラベンダー","真紅（クリムゾン）","アイシーピンク"], 0,
+   "秋タイプは黄みを含む深みのあるテラコッタのような色が得意です。"],
+  ["夏タイプに似合う色として適切なのは？",
+   ["ローズピンクやラベンダー","黄みのオレンジ","マスタードイエロー","漆黒に近い黒"], 0,
+   "夏タイプは青みを含む柔らかいローズピンクやラベンダーが得意です。"],
+  ["冬タイプに似合う色として適切なのは？",
+   ["真紅やロイヤルブルーなど鮮やかな色","コーラルオレンジ","ベージュやキャメル","マスタードイエロー"], 0,
+   "冬タイプは青みを含む、真紅やロイヤルブルーのようなはっきりした色が得意です。"],
+  ["肌・髪・瞳のコントラストが強く、はっきりした色が似合うタイプは？",
+   ["冬タイプ","夏タイプ","春タイプ","秋タイプ"], 0,
+   "冬タイプはコントラストが強く、はっきりした色や白黒が似合いやすい傾向です。"],
+  ["肌・髪・瞳のコントラストが穏やかで、優しい色が似合うタイプは？",
+   ["夏タイプ","冬タイプ","秋タイプ","春タイプ"], 0,
+   "夏タイプはコントラストが穏やかで、柔らかい色が似合いやすい傾向です。"],
+  ["イエベの方が口紅で避けたほうがよいとされやすい色みは？",
+   ["強い青みのある色（ブルーベース）","黄みのあるコーラル系","オレンジみのある色","ベージュ系"], 0,
+   "イエベは黄み系の色が得意なため、強い青みの口紅は浮きやすいとされます。"],
+  ["ブルベの方が口紅で避けたほうがよいとされやすい色みは？",
+   ["強いオレンジみのある色","青みのあるローズ系","ピンク系","レッド系全般"], 0,
+   "ブルベは青み系の色が得意なため、強いオレンジみの口紅は浮きやすいとされます。"],
+  ["パーソナルカラー診断の基準として適切でないものは？",
+   ["本人が好きな色かどうか","肌の色みや明るさ","瞳や髪の色","日光に当たったときの肌の反応"], 0,
+   "好みの色は診断基準ではなく、肌・髪・瞳の色みなど客観的な特徴から診断します。"],
+  ["4シーズン診断法は、最初に大きく何と何の2つに分けられる？",
+   ["暖色系（イエベ）と寒色系（ブルベ）","明るい色と暗い色","濃い色と薄い色","季節の気温"], 0,
+   "最初に暖色系（イエベ）か寒色系（ブルベ）かで大きく分け、その後4シーズンに細分化します。"],
+  ["春タイプと秋タイプはどちらも暖色系（イエベ）ですが、主な違いは何？",
+   ["明るさ・鮮やかさ（春は明るく鮮やか、秋は落ち着いて深い）","得意な色の系統がまったく異なる","春だけ日焼けしやすい","秋だけゴールドが似合う"], 0,
+   "どちらも黄みを含みますが、春は明るくクリア、秋は落ち着いて深みのあるトーンが得意です。"],
+  ["夏タイプと冬タイプはどちらも寒色系（ブルベ）ですが、主な違いは何？",
+   ["明るさ・鮮やかさ（夏は柔らかい、冬ははっきり鮮やかまたは深い）","得意な色の系統がまったく異なる","夏だけシルバーが似合う","冬だけ日焼けしにくい"], 0,
+   "どちらも青みを含みますが、夏は柔らかく優しいトーン、冬ははっきりした鮮やかまたは深いトーンが得意です。"],
+  ["接客でパーソナルカラーを提案する際、最初に行うべきこととして適切なのは？",
+   ["肌・髪・瞳の色などの特徴を観察すること","おすすめしたい商品を先に決めること","流行色を優先して勧めること","価格帯だけで商品を選ぶこと"], 0,
+   "お客様の肌・髪・瞳の特徴を観察して診断することが提案の出発点です。"],
+];
+const QUESTIONS = KNOWLEDGE_RAW.map(([text,choices,correctIndex,explain])=>({text,choices,correctIndex,explain}));
+
+/* ---------- 口紅のシーズン分類データ（STEP1は疎通確認用の仮データ。STEP3で40点の本データに差し替え） ---------- */
+const SEASON_VALUES = ["spring","summer","autumn","winter"];
+const SEASON_LABEL = { spring:"春", summer:"夏", autumn:"秋", winter:"冬" };
+const SEASON_TRAIT = {
+  spring: "黄みがかった明るく鮮やかな色が似合うタイプ",
+  summer: "青みがかった柔らかく優しい色が似合うタイプ",
+  autumn: "黄みがかった深みのある落ち着いた色が似合うタイプ",
+  winter: "青みがかったはっきりした色（鮮やかまたは深い）が似合うタイプ",
+};
+// [コード, 漢字名, ローマ字名, シーズン, 代表色hex, 典型例か, 分類理由]
+// 実際の商品写真から色をサンプリングし、色相（暖色/寒色）・明度・彩度をもとに分類（AIによる教育目的の分類、公式データではない）
+const RAW_LIPSTICK = [
+  ["A1","月の霜","TSUKI NO SHIMO","summer","#e19d9f",true,"青み〜中間で明るく柔らかいベビーピンク"],
+  ["A2","三五の月","SANGO NO TSUKI","winter","#e47579",true,"はっきりした鮮やかな真紅"],
+  ["A3","八重雲","YAEGUMO","spring","#de797f",true,"黄み〜中間で明るいコーラルピンク"],
+  ["A4","七星","NANATSUBOSHI","winter","#d86c6e",true,"深みのある鮮やかな真紅"],
+  ["A5","月人","TSUKIHITO","summer","#e49dab",true,"青み寄りで明るく柔らかいピンク"],
+  ["A6","月影","GETSUEI","summer","#cd7f8f",true,"青み寄りで落ち着いたモーブピンク"],
+  ["A7","夕影","YUUKAGE","autumn","#c57e76",true,"黄み寄りで落ち着いたテラコッタ"],
+  ["A8","舂く","USUZUKU","summer","#bd6676",true,"青み寄りで落ち着いたプラム"],
+  ["A9","朝日子","ASAHIKO","autumn","#c68c8a",false,"黄みのくすんだローズベージュ"],
+  ["A10","有明","ARIAKE","summer","#ba7178",false,"青み寄りのくすんだローズ"],
+  ["B1","月華","GEKKA","spring","#e38d83",true,"黄み寄りで明るいコーラル"],
+  ["B2","望月","MOCHIZUKI","spring","#e18164",true,"黄み寄りで鮮やかなオレンジ"],
+  ["B3","上露","UWATSUYU","spring","#f58e88",true,"黄み〜中間でとても明るいサーモンピンク"],
+  ["B4","天霧る","AMAGIRU","autumn","#c9756f",true,"黄み寄りで落ち着いたテラコッタレッド"],
+  ["B5","水無川","MINASHIGAWA","spring","#db9e9a",true,"黄み〜中間で明るいピーチピンク"],
+  ["B6","霞","KASUMI","summer","#ab707d",true,"青み寄りのくすんだプラム"],
+  ["B7","露けし","TSUYUKESHI","summer","#ce7e8c",true,"青み寄りで柔らかいローズピンク"],
+  ["B8","彩雲","SAIUN","summer","#9b5960",false,"青み寄りで深みのあるくすんだワイン"],
+  ["B9","明星","AKABOSHI","spring","#dc8784",true,"中間で明るいコーラルレッド"],
+  ["B10","野馬","YABA","summer","#b77879",false,"中間のくすんだローズブラウン"],
+  ["C1","日影","HIKAGE","spring","#db8779",true,"黄み寄りで明るいコーラルオレンジ"],
+  ["C2","下照る","SHITADERU","autumn","#c89484",true,"黄み寄りで落ち着いたベージュブラウン"],
+  ["C3","夕星","YUUZUTSU","autumn","#b76c5a",true,"黄み寄りで深みのあるラスト"],
+  ["C4","星影","HOSHIKAGE","autumn","#a36e62",true,"黄み寄りでくすんだブラウン"],
+  ["C5","霧","KI","summer","#ca6b73",false,"青み寄りの中間的なローズレッド"],
+  ["C6","月の船","TSUKI NO FUNE","autumn","#b6706e",false,"黄み寄りでくすんだブリックローズ"],
+  ["C7","雲間","KUMOMA","summer","#d0878b",true,"中間で柔らかいローズピンク"],
+  ["C8","夜半の月","YOWA NO TSUKI","winter","#915658",true,"青み寄りで深みのあるくすんだワインベリー"],
+  ["C9","弓張の月","YUMIHARI NO TSUKI","autumn","#c3746e",true,"黄み寄りで中間的なブリックレッド"],
+  ["C10","朧月夜","OBOROZUKUYO","winter","#be5b61",true,"青み寄りで深みのある鮮やかなローズレッド"],
+  ["D1","清光","SEIKOU","spring","#d37e79",true,"中間で明るいコーラルレッド"],
+  ["D2","白露","SHIRATSUYU","spring","#cc6b57",true,"黄み寄りで明るいピーチオレンジ"],
+  ["D3","旗雲","HATAGUMO","autumn","#bf8075",true,"黄み寄りでくすんだテラコッタベージュ"],
+  ["D4","星合","HOSHIAI","autumn","#bb7a73",true,"黄み寄りでくすんだブリック"],
+  ["D5","下露","SHITATSUYU","summer","#d788a2",true,"青み寄りで明るいオーキッドピンク"],
+  ["D6","薄雲","USUGUMO","summer","#bb6077",true,"青み寄りで中間的なモーブパープル"],
+  ["D7","青雲","SEIUN","winter","#c86778",false,"青み寄りで鮮やかなローズピンク"],
+  ["D8","落星","OCHIBOSHI","summer","#a6626d",false,"青み寄りで深みのあるくすんだプラム"],
+  ["D9","夕闇","YUUYAMI","winter","#b54b50",true,"深みのある鮮やかな真紅"],
+  ["D10","暮雨の天","BOU NO TEN","winter","#af585d",false,"中間的で深みのあるくすんだレッド"],
+];
+const LIPSTICKS = RAW_LIPSTICK.map(([code,kanji,romaji,season,hex,typical,reason])=>({
+  code, kanji, romaji, season, hex, typical, reason,
+  kw: `${kanji} ${romaji}`,
+}));
+
+/* ---------- 接客シミュレーション用の架空の来店客データ（STEP1は仮データ。STEP4で本実装に差し替え） ---------- */
+const PERSONA_RAW = [
+  // [肌の色hex, 髪の色hex, 瞳の色hex, 特徴の説明文, 正解シーズン, 診断理由, おすすめ商品コード]
+
+  // ── 春タイプ ──
+  ["#f3c9a0","#a86b3c","#8a5a2b","肌は黄みのあるアイボリーで血色はピーチ系。日焼けすると小麦色になりやすい。髪は明るめのゴールドブラウン、瞳は明るいヘーゼル。","spring",
+   "黄みのある肌、健康的に焼けやすい傾向、明るいゴールドブラウンの髪と瞳から、暖色系で明るく鮮やかな春タイプと判断できます。","A3"],
+  ["#f0c4a5","#c98a4a","#9c6a35","肌は黄みが強くつやのある印象。ゴールドのアクセサリーがよく似合う。髪は明るい栗色、瞳は明るいブラウン。","spring",
+   "黄み肌でゴールドが似合うこと、明るい栗色の髪と瞳から、明るく鮮やかな暖色系＝春タイプと判断できます。","B3"],
+  ["#f5cdae","#8a5a30","#6b4423","手首の血管が緑がかって見えるイエベ肌。日光に当たると健康的に焼ける。髪と瞳はやわらかいブラウン系。","spring",
+   "血管が緑がかって見える典型的なイエベで、髪・瞳も明るめの暖色ブラウンのため、春タイプと判断できます。","C1"],
+  ["#f7d2b0","#b9793e","#7a5228","肌は明るくつやがあり黄みを感じる。頬の血色はコーラル系。髪は明るいブラウン、瞳も明るめ。","spring",
+   "黄みのある明るい肌とコーラル系の血色、明るいブラウンの髪・瞳から、明るく鮮やかな春タイプと判断できます。","D2"],
+
+  // ── 夏タイプ ──
+  ["#f0d9d0","#4a3a35","#4a3530","肌は青み寄りで色白、血色はピンク系。日焼けすると赤くなりやすい。髪はアッシュブラウン、瞳は柔らかいダークブラウン。","summer",
+   "青みのある色白の肌、日焼けで赤くなりやすい性質、アッシュ系の髪から、寒色系で柔らかい夏タイプと判断できます。","A6"],
+  ["#eddbd5","#5c4a42","#574540","手首の血管が青紫っぽいブルベ肌。シルバーのアクセサリーがなじみやすい。髪と瞳はやわらかい落ち着いた色。","summer",
+   "血管が青紫に見える典型的なブルベで、シルバーが似合うことからも、柔らかい寒色系＝夏タイプと判断できます。","B7"],
+  ["#f2ddd8","#6b5850","#5c4a44","肌はピンクがかった色白で透明感がある。頬の血色は控えめなローズ系。髪と瞳はやわらかいグレイッシュブラウン。","summer",
+   "ピンクがかった透明感のある肌とグレイッシュな髪・瞳の色みから、柔らかい寒色系＝夏タイプと判断できます。","C7"],
+  ["#efd6d8","#3f322e","#3a2d29","色白で肌に青みがあり、コントラストは穏やか。日光には弱く赤くなりやすいタイプ。髪と瞳は柔らかいダークトーン。","summer",
+   "青み肌で日焼けに弱く、肌・髪・瞳のコントラストも穏やかなため、柔らかい寒色系＝夏タイプと判断できます。","D5"],
+
+  // ── 秋タイプ ──
+  ["#d9a878","#5a3a20","#4a2e18","肌は黄みが強くオリーブがかった印象。日光に当たると深く小麦色に焼ける。髪は深いブラウン、瞳もダークブラウン。","autumn",
+   "黄みの強いオリーブ肌と深く焼ける傾向、深みのあるブラウンの髪・瞳から、落ち着いた暖色系＝秋タイプと判断できます。","A7"],
+  ["#d3a074","#4a2f18","#3a2412","肌はしっかり黄みがあり血色は控えめ。ゴールドのアクセサリーがなじむ。髪と瞳は深いこっくりとしたブラウン。","autumn",
+   "黄み肌でゴールドが似合い、髪・瞳が深いブラウンであることから、落ち着いた暖色系＝秋タイプと判断できます。","C3"],
+  ["#d8a97e","#5c3d22","#452c16","肌は健康的な黄みのある小麦色。日焼けあとが残りやすい。髪は赤みのあるダークブラウン、瞳も深めのブラウン。","autumn",
+   "黄みのある小麦色の肌と赤みを帯びた深い髪色から、落ち着いた暖色系＝秋タイプと判断できます。","D3"],
+  ["#d6a57c","#503420","#402a16","肌はマットで黄み寄り、血色は控えめ。手首の血管は緑がかって見える。髪と瞳は深く落ち着いたブラウン。","autumn",
+   "血管が緑がかって見える黄み肌と、深く落ち着いた髪・瞳の色みから、秋タイプと判断できます。","B4"],
+
+  // ── 冬タイプ ──
+  ["#f2e0dc","#1a1512","#1a1512","肌は青みのある陶器肌で、髪はつやのある黒髪。瞳も濃いダークブラウンで、肌と髪・瞳のコントラストがはっきりしている。","winter",
+   "青み肌に加えて黒髪・濃い瞳とのコントラストが強いため、はっきりした寒色系＝冬タイプと判断できます。","A2"],
+  ["#ecdcd6","#201a16","#201a16","色白で青みのある肌。シルバーのアクセサリーが映える。髪と瞳は濃いブラックブラウンで、顔立ちがはっきり見える。","winter",
+   "青み肌でシルバーが似合い、濃い髪・瞳とのコントラストが強いことから、冬タイプと判断できます。","C10"],
+  ["#dcc6be","#191410","#191410","肌はやや小麦色だが青みを感じる。髪は漆黒に近く、瞳も真っ黒に近いダークブラウン。全体的にコントラストが強い。","winter",
+   "青みを感じる肌と、漆黒に近い髪・瞳との強いコントラストから、冬タイプと判断できます。","D9"],
+  ["#eeded9","#23201e","#23201e","色白で青み寄りの肌。日光に当たると赤くなりやすい。髪と瞳は濃く、肌との明暗差がはっきりしている。","winter",
+   "青み寄りの色白肌と、濃い髪・瞳との明暗差がはっきりしていることから、冬タイプと判断できます。","C8"],
+];
+const PERSONAS = PERSONA_RAW.map(([skin,hair,eye,desc,season,seasonReason,recommendedCode])=>({
+  skin, hair, eye, desc, season, seasonReason,
+  recommended: LIPSTICKS.find(p=>p.code===recommendedCode),
+}));
+
+/* ---------- 合言葉ロック ---------- */
+// パスワードそのものではなく SHA-256 ハッシュを埋め込んで比較する
+// （簡易的な鍵：ソースを見ても平文はわからないが、本物のサーバー認証ではない。既存クイズと同じ合言葉を利用）
+const LOCK_HASH = "6a4a20a527695a2bc41d00d2143791c53384bddb290caa1cb26be5b1a4720c07";
+const LOCK_KEY = "pc_quiz_unlocked_v1";
+async function sha256Hex(text){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function tryUnlock(){
+  const input = $("#lock-input");
+  const val = input.value;
+  const hash = await sha256Hex(val);
+  if(hash === LOCK_HASH){
+    try{ localStorage.setItem(LOCK_KEY, "1"); }catch(e){}
+    $("#lock-error").textContent = "";
+    show("start");
+    renderBestLine();
+  } else {
+    $("#lock-error").textContent = "合言葉が違います";
+    input.value = "";
+    input.focus();
+  }
+}
+
+/* ---------- 状態 ---------- */
+const BEST_KEY = "pc_quiz_best_v1";
+let mode = "knowledge"; // "knowledge" | "simulation"
+let chosenCount = 10;   // 0 = 全部（知識クイズのみ）
+let quiz = [];
+let idx = 0;
+let score = 0;
+let missed = [];
+let selProduct = null; // 選択中のおすすめ商品（未確定・シミュレーション用）
+let selSeason = null;  // 選択中のシーズン（未確定・シミュレーション用）
+let locked = false;
+
+/* ---------- ユーティリティ ---------- */
+const $ = (s)=>document.querySelector(s);
+const shuffle = (a)=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; };
+function show(screen){
+  ["lock","start","quiz","result"].forEach(s=>$("#screen-"+s).classList.toggle("hidden", s!==screen));
+}
+function loadBest(){ try{ return JSON.parse(localStorage.getItem(BEST_KEY)||"{}"); }catch(e){ return {}; } }
+function saveBest(obj){ try{ localStorage.setItem(BEST_KEY, JSON.stringify(obj)); }catch(e){} }
+function bestKey(){ return mode==="knowledge" ? `knowledge:${chosenCount}` : "simulation"; }
+function renderBestLine(){
+  const b = loadBest();
+  const key = bestKey();
+  const el = $("#best-line");
+  if(b[key]){
+    const label = mode==="knowledge" ? (chosenCount===0?"知識クイズ・全部":`知識クイズ・${chosenCount}問`) : "接客シミュレーション";
+    el.textContent = `自己ベスト（${label}）: ${b[key].correct} / ${b[key].total}`;
+  } else el.textContent = "";
+}
+
+/* ---------- モード・出題数の選択 ---------- */
+$("#seg-mode").addEventListener("click",(e)=>{
+  const btn = e.target.closest("button"); if(!btn) return;
+  [...e.currentTarget.children].forEach(b=>b.setAttribute("aria-pressed", b===btn));
+  mode = btn.dataset.mode;
+  $("#count-wrap").classList.toggle("hidden", mode==="simulation");
+  $("#mode-desc").textContent = mode==="knowledge"
+    ? "知識クイズ：4シーズン診断法の基礎知識を4択で確認します。"
+    : "接客シミュレーション：架空のお客様の肌・髪・瞳の色から診断し、似合う色まで提案します。";
+  renderBestLine();
+});
+$("#seg-count").addEventListener("click",(e)=>{
+  const btn = e.target.closest("button"); if(!btn) return;
+  [...e.currentTarget.children].forEach(b=>b.setAttribute("aria-pressed", b===btn));
+  chosenCount = parseInt(btn.dataset.count,10);
+  renderBestLine();
+});
+
+/* ---------- おすすめ商品の紛らわしい選択肢（別シーズンの典型例から1点ずつ） ---------- */
+function pickProductDistractors(persona){
+  const otherSeasons = SEASON_VALUES.filter(s=>s!==persona.season);
+  const distractors = otherSeasons
+    .map(s=>shuffle(LIPSTICKS.filter(p=>p.typical && p.season===s))[0])
+    .filter(Boolean);
+  return shuffle([persona.recommended, ...distractors]);
+}
+
+/* ---------- クイズ生成 ---------- */
+function buildQuiz(list){
+  idx = 0; score = 0; missed = [];
+  if(mode === "knowledge"){
+    const pool = shuffle(QUESTIONS);
+    const n = chosenCount===0 ? pool.length : Math.min(chosenCount, pool.length);
+    const targets = list || pool.slice(0, n);
+    quiz = targets.map(item=>{
+      const idxs = shuffle([0,1,2,3]);
+      const choices = idxs.map(i=>item.choices[i]);
+      const correctIndex = idxs.indexOf(item.correctIndex);
+      return { kind:"knowledge", item, choices, correctIndex };
+    });
+  } else {
+    const pool = shuffle(PERSONAS);
+    const targets = list || pool;
+    quiz = targets.map(item=>({
+      kind:"simulation",
+      item,
+      productOptions: pickProductDistractors(item),
+      seasonOptions: SEASON_VALUES,
+    }));
+  }
+}
+
+/* ---------- 出題描画 ---------- */
+function renderQuestion(){
+  const cur = quiz[idx];
+  $("#q-progress").textContent = `問題 ${idx+1} / ${quiz.length}`;
+  $("#q-score").textContent = `正解 ${score}`;
+  $("#q-bar").style.width = (idx/quiz.length*100) + "%";
+
+  selProduct = null; selSeason = null; locked = false;
+
+  const isSim = cur.kind === "simulation";
+  $("#q-question-text").classList.toggle("hidden", isSim);
+  $("#q-persona").classList.toggle("hidden", !isSim);
+  $("#q-choices-single").classList.toggle("hidden", isSim);
+  $("#answer-row").classList.toggle("hidden", !isSim);
+
+  $("#q-choices-single").innerHTML = "";
+  $("#q-choices-product").innerHTML = "";
+  $("#q-choices-season").innerHTML = "";
+
+  if(isSim){
+    $("#q-hint").textContent = "このお客様に似合うシーズンとおすすめの色は？";
+    $("#sw-skin").style.background = cur.item.skin;
+    $("#sw-hair").style.background = cur.item.hair;
+    $("#sw-eye").style.background = cur.item.eye;
+    $("#persona-desc").textContent = cur.item.desc;
+
+    const productWrap = $("#q-choices-product");
+    cur.productOptions.forEach(opt=>{
+      const b = document.createElement("button");
+      b.className = "choice";
+      b.innerHTML = `<span class="chip" style="background:${opt.hex}"></span><span>${opt.kw}</span>`;
+      b.addEventListener("click", ()=>selectProduct(opt, b));
+      productWrap.appendChild(b);
+    });
+
+    const seasonWrap = $("#q-choices-season");
+    cur.seasonOptions.forEach(val=>{
+      const b = document.createElement("button");
+      b.className = "choice season";
+      b.textContent = SEASON_LABEL[val];
+      b.addEventListener("click", ()=>selectSeason(val, b));
+      seasonWrap.appendChild(b);
+    });
+  } else {
+    $("#q-hint").textContent = "正しいものを選んでください";
+    $("#q-question-text").textContent = cur.item.text;
+
+    const wrap = $("#q-choices-single");
+    cur.choices.forEach((choiceText,i)=>{
+      const b = document.createElement("button");
+      b.className = "choice";
+      b.innerHTML = `<span class="num">${i+1}</span><span>${choiceText}</span>`;
+      b.addEventListener("click", ()=>answerKnowledge(i, b));
+      wrap.appendChild(b);
+    });
+  }
+
+  $("#q-feedback").textContent = "";
+  $("#q-feedback").className = "feedback";
+  $("#q-fullname").textContent = "";
+  $("#btn-next").classList.add("hidden");
+  $("#btn-next").textContent = idx === quiz.length-1 ? "結果を見る" : "次へ";
+}
+
+/* ---------- 知識クイズの回答 ---------- */
+function answerKnowledge(choiceIndex, btn){
+  if(locked) return;
+  locked = true;
+  const cur = quiz[idx];
+  const correct = choiceIndex === cur.correctIndex;
+  if(correct){ score++; } else { missed.push(cur.item); }
+
+  [...$("#q-choices-single").children].forEach((c,i)=>{
+    c.disabled = true;
+    if(i === cur.correctIndex) c.classList.add("correct");
+    else if(i === choiceIndex) c.classList.add("wrong");
+  });
+
+  const fb = $("#q-feedback");
+  fb.textContent = correct ? "正解！" : "不正解";
+  fb.className = "feedback " + (correct ? "ok" : "ng");
+  $("#q-fullname").textContent = cur.item.explain;
+  $("#q-score").textContent = `正解 ${score}`;
+  $("#btn-next").classList.remove("hidden");
+}
+
+/* ---------- 接客シミュレーションの回答（シーズン・おすすめ商品の両方正解して初めて正解） ---------- */
+function selectProduct(opt, btn){
+  if(locked) return;
+  selProduct = opt;
+  [...$("#q-choices-product").children].forEach(c=>c.classList.toggle("selected", c===btn));
+  maybeEvaluateSim();
+}
+function selectSeason(val, btn){
+  if(locked) return;
+  selSeason = val;
+  [...$("#q-choices-season").children].forEach(c=>c.classList.toggle("selected", c===btn));
+  maybeEvaluateSim();
+}
+function maybeEvaluateSim(){
+  if(selProduct && selSeason) evaluateSim();
+}
+function evaluateSim(){
+  const cur = quiz[idx];
+  const persona = cur.item;
+  locked = true;
+
+  const productOk = selProduct.code === persona.recommended.code;
+  const seasonOk = selSeason === persona.season;
+  const correct = productOk && seasonOk;
+  if(correct){ score++; } else { missed.push(persona); }
+
+  [...$("#q-choices-product").children].forEach(c=>{
+    c.disabled = true;
+    c.classList.remove("selected");
+    const label = c.querySelector("span:last-child").textContent;
+    if(label === persona.recommended.kw) c.classList.add("correct");
+    else if(!productOk && label === selProduct.kw) c.classList.add("wrong");
+  });
+  [...$("#q-choices-season").children].forEach(c=>{
+    c.disabled = true;
+    c.classList.remove("selected");
+    if(c.textContent === SEASON_LABEL[persona.season]) c.classList.add("correct");
+    else if(!seasonOk && c.textContent === SEASON_LABEL[selSeason]) c.classList.add("wrong");
+  });
+
+  const fb = $("#q-feedback");
+  fb.textContent = correct ? "正解！" : "不正解";
+  fb.className = "feedback " + (correct ? "ok" : "ng");
+
+  const lines = [];
+  lines.push(`<b>正解：${SEASON_LABEL[persona.season]}タイプ／${persona.recommended.kw}</b>`);
+  lines.push(`【診断理由】${persona.seasonReason}`);
+  lines.push(`【おすすめ理由】${persona.recommended.kw}は${persona.recommended.reason}のため、${SEASON_LABEL[persona.season]}タイプに似合う色です。`);
+  if(!seasonOk){
+    lines.push(`【季節の誤り】「${SEASON_LABEL[selSeason]}」は${SEASON_TRAIT[selSeason]}です。このお客様は上記の理由で${SEASON_LABEL[persona.season]}タイプなので当てはまりません。`);
+  }
+  if(!productOk){
+    lines.push(`【商品の誤り】「${selProduct.kw}」は${selProduct.reason}で、${SEASON_LABEL[selProduct.season]}タイプ向けの色です。${SEASON_LABEL[persona.season]}タイプのこのお客様には合いません。`);
+  }
+  $("#q-fullname").innerHTML = lines.join("<br>");
+  $("#q-score").textContent = `正解 ${score}`;
+  $("#btn-next").classList.remove("hidden");
+}
+
+$("#btn-next").addEventListener("click", ()=>{
+  if(idx < quiz.length-1){ idx++; renderQuestion(); }
+  else { renderResult(); }
+});
+
+/* ---------- 結果 ---------- */
+function renderResult(){
+  $("#q-bar").style.width = "100%";
+  const total = quiz.length;
+  const pct = Math.round(score/total*100);
+  $("#r-score").innerHTML = `${score}<small> / ${total}</small>`;
+  $("#r-sub").textContent = `正答率 ${pct}%`;
+
+  const key = bestKey();
+  const b = loadBest();
+  if(!b[key] || score/total > b[key].correct/b[key].total){
+    b[key] = { correct: score, total }; saveBest(b);
+  }
+
+  const rv = $("#r-review");
+  rv.innerHTML = "";
+  if(missed.length === 0){
+    rv.innerHTML = '<div class="allright">全問正解！おみごとです</div>';
+    $("#btn-retry-miss").classList.add("hidden");
+  } else {
+    $("#btn-retry-miss").classList.remove("hidden");
+    const t = document.createElement("div");
+    t.className = "review-title";
+    t.textContent = `間違えた問題（${missed.length}）`;
+    rv.appendChild(t);
+    missed.forEach(m=>{
+      const row = document.createElement("div");
+      row.className = "miss";
+      if(mode === "knowledge"){
+        row.innerHTML = `<div><div class="m-kw">${m.text}</div><div class="m-full">${m.explain}</div></div>`;
+      } else {
+        row.innerHTML = `<div class="swatch-mini" style="background:${m.skin}"></div><div><div class="m-kw">${SEASON_LABEL[m.season]} / ${m.recommended.kw}</div><div class="m-full">${m.desc}</div></div>`;
+      }
+      rv.appendChild(row);
+    });
+  }
+  show("result");
+}
+
+$("#btn-retry-miss").addEventListener("click", ()=>{
+  const list = shuffle(missed);
+  buildQuiz(list);
+  show("quiz"); renderQuestion();
+});
+$("#btn-again").addEventListener("click", ()=>{
+  show("start"); renderBestLine();
+});
+
+/* ---------- スタート ---------- */
+$("#btn-start").addEventListener("click", ()=>{
+  buildQuiz(null);
+  show("quiz");
+  renderQuestion();
+});
+
+/* ---------- キーボード操作（PCテスト用・知識クイズのみ） ---------- */
+document.addEventListener("keydown",(e)=>{
+  if(!$("#screen-quiz").classList.contains("hidden") && mode==="knowledge"){
+    if(["1","2","3","4"].includes(e.key)){
+      const b = $("#q-choices-single").children[+e.key-1];
+      if(b && !b.disabled) b.click();
+    } else if((e.key === "Enter" || e.key === " ") && !$("#btn-next").classList.contains("hidden")){
+      e.preventDefault(); $("#btn-next").click();
+    }
+  }
+});
+
+$("#btn-unlock").addEventListener("click", tryUnlock);
+$("#lock-input").addEventListener("keydown", (e)=>{ if(e.key === "Enter") tryUnlock(); });
+
+/* ---------- 初期表示：解錠済みならロック画面をスキップ ---------- */
+(function initLock(){
+  let unlocked = false;
+  try{ unlocked = localStorage.getItem(LOCK_KEY) === "1"; }catch(e){}
+  if(unlocked){ show("start"); renderBestLine(); }
+  else { show("lock"); $("#lock-input").focus(); }
+})();
+</script>
+</body>
+</html>
