@@ -942,7 +942,13 @@
     });
   }
   function openOverlay(id){ $(id).classList.add("open"); }
-  function closeOverlay(id){ $(id).classList.remove("open"); }
+  function closeOverlay(id){
+    // iPhoneではボタンを押しても入力欄のフォーカスが外れないため、
+    // 閉じる前に外さないとキーボードだけが画面に残る
+    var el = $(id), active = document.activeElement;
+    if(active && el.contains(active)) active.blur();
+    el.classList.remove("open");
+  }
 
   function renderAll(){
     renderMonth();
