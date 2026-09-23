@@ -7,57 +7,77 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="お花日記">
 <title>お花日記</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
   :root{
-    --bg:#fff5f8;
+    --bg:#fff4f7;
     --card:#ffffff;
-    --ink:#4a3a41;
-    --ink-soft:#9c8790;
-    --line:#f5dde5;
-    --accent:#e27d9b;
-    --accent-deep:#c85c7d;
-    --accent-soft:#fde8ef;
-    --shadow:0 6px 22px rgba(200,92,125,.13);
+    --ink:#5a4049;
+    --ink-soft:#a88c97;
+    --line:#ffd9e4;
+    --accent:#f28bab;
+    --accent-deep:#d9658a;
+    --accent-soft:#ffe6ee;
+    --yellow:#ffd66e;
+    --leaf:#9fcf8c;
+    --shadow:0 6px 18px rgba(217,101,138,.16);
+    --flower:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='27' r='24'/><circle cx='72' cy='43' r='24'/><circle cx='63.5' cy='69' r='24'/><circle cx='36.5' cy='69' r='24'/><circle cx='28' cy='43' r='24'/><circle cx='50' cy='50' r='26'/></svg>");
+    --font:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
-    background:var(--bg);
     color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    font-family:var(--font);
     line-height:1.6;
     -webkit-text-size-adjust:100%;
     -webkit-tap-highlight-color:transparent;
+    /* 背景に小さなお花を散らす */
+    background-color:var(--bg);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><g opacity='.55'><g transform='translate(18 26) scale(.2)' fill='%23ffc9d8'><circle cx='50' cy='27' r='24'/><circle cx='72' cy='43' r='24'/><circle cx='63.5' cy='69' r='24'/><circle cx='36.5' cy='69' r='24'/><circle cx='28' cy='43' r='24'/><circle cx='50' cy='50' r='12' fill='%23fff0b8'/></g><g transform='translate(128 92) scale(.14)' fill='%23ffdbe6'><circle cx='50' cy='27' r='24'/><circle cx='72' cy='43' r='24'/><circle cx='63.5' cy='69' r='24'/><circle cx='36.5' cy='69' r='24'/><circle cx='28' cy='43' r='24'/><circle cx='50' cy='50' r='12' fill='%23fff0b8'/></g><g transform='translate(52 146) scale(.12)' fill='%23ffd2c4'><circle cx='50' cy='27' r='24'/><circle cx='72' cy='43' r='24'/><circle cx='63.5' cy='69' r='24'/><circle cx='36.5' cy='69' r='24'/><circle cx='28' cy='43' r='24'/><circle cx='50' cy='50' r='12' fill='%23fff0b8'/></g><ellipse cx='100' cy='40' rx='7' ry='3.5' fill='%23d6ecc9' transform='rotate(-30 100 40)'/><ellipse cx='170' cy='170' rx='7' ry='3.5' fill='%23d6ecc9' transform='rotate(25 170 170)'/><circle cx='160' cy='30' r='3' fill='%23ffc9d8'/><circle cx='20' cy='110' r='2.5' fill='%23ffe3a8'/></g></svg>");
+    background-size:200px 200px;
   }
   button{font-family:inherit}
+  .ic{width:1em;height:1em;vertical-align:-.12em;flex:none}
   .wrap{
     max-width:520px;
     margin:0 auto;
     min-height:100vh;
     min-height:100dvh;
-    padding:calc(18px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));
+    padding:calc(14px + env(safe-area-inset-top)) 16px calc(104px + env(safe-area-inset-bottom));
   }
+
+  /* ヘッダー */
+  .hero{text-align:center;margin:4px 0 16px}
   .brand{
     font-size:11px;
-    letter-spacing:.24em;
+    letter-spacing:.3em;
     color:var(--accent);
-    margin-bottom:2px;
+    margin-bottom:0;
   }
   h1{
-    font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
-    font-weight:600;
-    font-size:22px;
-    letter-spacing:.06em;
-    margin:0 0 14px;
+    font-weight:700;
+    font-size:26px;
+    letter-spacing:.1em;
+    margin:0;
+    display:flex;align-items:center;justify-content:center;gap:10px;
   }
+  h1 .ic{width:26px;height:26px}
+  h1 .ic.l{color:var(--accent);transform:rotate(-12deg)}
+  h1 .ic.r{color:#ffb3c7;transform:rotate(14deg)}
+  .sub{margin:2px 0 0;font-size:12px;color:var(--ink-soft)}
 
   /* タブ */
   .tabs{
     display:flex;
-    background:var(--accent-soft);
+    gap:6px;
+    background:rgba(255,255,255,.75);
+    border:2px solid var(--line);
     border-radius:999px;
-    padding:4px;
+    padding:5px;
     margin-bottom:16px;
   }
   .tabs button{
@@ -67,18 +87,21 @@
     background:none;
     color:var(--accent-deep);
     font-size:14px;
+    font-weight:700;
     padding:8px 0;
     border-radius:999px;
     cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:5px;
   }
+  .tabs button .ic{width:18px;height:18px}
   .tabs button.on{
-    background:var(--card);
-    color:var(--ink);
-    font-weight:600;
-    box-shadow:0 2px 8px rgba(200,92,125,.15);
+    background:linear-gradient(135deg,#ffa3bd,var(--accent));
+    color:#fff;
+    box-shadow:0 3px 10px rgba(217,101,138,.3);
   }
   .view{display:none}
-  .view.on{display:block}
+  .view.on{display:block;animation:pop .25s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
   /* 期間ナビ */
   .nav{
@@ -88,132 +111,167 @@
     margin-bottom:10px;
   }
   .nav .label{
-    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
-    font-size:18px;
-    font-weight:600;
+    font-size:19px;
+    font-weight:700;
+    letter-spacing:.05em;
+    background:var(--card);
+    border:2px solid var(--line);
+    border-radius:999px;
+    padding:2px 18px;
   }
   .nav button{
     appearance:none;
-    border:1px solid var(--line);
-    background:var(--card);
+    border:none;
+    background:var(--accent-soft);
     color:var(--accent-deep);
-    width:36px;height:36px;
+    width:38px;height:38px;
     border-radius:50%;
-    font-size:18px;
+    font-size:20px;
+    font-weight:700;
     cursor:pointer;
   }
 
   /* 月カレンダー */
   .cal{
+    position:relative;
     background:var(--card);
-    border:1px solid var(--line);
-    border-radius:18px;
+    border:2px solid var(--line);
+    border-radius:26px;
     box-shadow:var(--shadow);
-    padding:10px 8px 8px;
+    padding:14px 8px 10px;
   }
+  .cal::before,.cal::after{
+    content:"";
+    position:absolute;
+    width:34px;height:34px;
+    -webkit-mask:var(--flower) center/contain no-repeat;
+    mask:var(--flower) center/contain no-repeat;
+  }
+  .cal::before{top:-14px;left:-10px;background:var(--accent);transform:rotate(-15deg)}
+  .cal::after{top:-10px;right:-8px;width:26px;height:26px;background:#ffc1d2;transform:rotate(20deg)}
   .cal-row{
     display:grid;
-    grid-template-columns:26px repeat(7,1fr);
+    grid-template-columns:24px repeat(7,1fr);
     gap:3px;
     margin-bottom:3px;
   }
   .cal-head div{
     text-align:center;
     font-size:11px;
+    font-weight:700;
     color:var(--ink-soft);
     padding-bottom:2px;
   }
-  .cal-head .sun{color:#d4606f}
-  .cal-head .sat{color:#5f86c4}
+  .cal-head .sun{color:#e46a86}
+  .cal-head .sat{color:#72a2d6}
   .wk{
     appearance:none;
     border:none;
-    background:var(--accent-soft);
-    color:var(--accent-deep);
-    border-radius:8px;
+    background:linear-gradient(#e9f5e2,#d8eecd);
+    color:#6a9a58;
+    border-radius:12px;
     font-size:10px;
+    font-weight:700;
     writing-mode:vertical-rl;
-    letter-spacing:.1em;
+    letter-spacing:.15em;
     cursor:pointer;
     padding:0;
   }
   .day{
     position:relative;
-    aspect-ratio:1/1.2;
-    border-radius:9px;
-    background:#fffafb;
-    border:1px solid transparent;
-    overflow:hidden;
+    aspect-ratio:1/1.18;
+    border-radius:14px;
+    background:#fff8fa;
+    border:none;
+    overflow:visible;
     cursor:pointer;
     padding:0;
     appearance:none;
-    text-align:left;
   }
   .day .n{
     position:absolute;
-    top:2px;left:4px;
-    font-size:11px;
-    color:var(--ink);
+    top:2px;left:3px;
     z-index:2;
+    min-width:18px;height:18px;
+    line-height:18px;
+    text-align:center;
+    font-size:11px;
+    font-weight:700;
+    color:var(--ink);
+    border-radius:9px;
   }
-  .day.has-photo .n{
-    color:#fff;
-    text-shadow:0 1px 3px rgba(0,0,0,.5);
-  }
+  .day.has-photo .n{background:rgba(255,255,255,.9);color:var(--accent-deep)}
+  /* 写真をお花の形に切り抜く */
   .day img{
     position:absolute;
-    inset:0;
-    width:100%;height:100%;
+    left:6%;right:6%;bottom:6%;
+    width:88%;
+    aspect-ratio:1;
     object-fit:cover;
+    -webkit-mask:var(--flower) center/contain no-repeat;
+    mask:var(--flower) center/contain no-repeat;
   }
-  .day .dot{
+  .day .mini{
     position:absolute;
-    left:50%;bottom:8px;
-    width:7px;height:7px;
-    margin-left:-3.5px;
-    border-radius:50%;
-    background:var(--accent);
+    left:50%;bottom:10%;
+    width:44%;height:auto;aspect-ratio:1;
+    transform:translateX(-50%);
+    color:#ffb3c7;
   }
   .day.out{opacity:.35}
-  .day.today{border-color:var(--accent)}
+  .day.today{background:var(--accent-soft)}
+  .day.today .n{background:var(--accent);color:#fff}
   .day.future{cursor:default}
   .cal-note{
     font-size:11px;
     color:var(--ink-soft);
     text-align:center;
-    margin-top:8px;
+    margin-top:10px;
   }
 
-  /* 週表示 */
+  /* 週表示（ポラロイド風） */
   .wday{
+    position:relative;
     background:var(--card);
-    border:1px solid var(--line);
-    border-radius:16px;
+    border:2px solid var(--line);
+    border-radius:22px;
     box-shadow:var(--shadow);
-    padding:12px 14px;
-    margin-bottom:10px;
+    padding:14px 14px 12px;
+    margin-bottom:12px;
     cursor:pointer;
   }
   .wday.today{border-color:var(--accent)}
   .wday .wd{
+    display:inline-flex;align-items:center;gap:5px;
     font-size:12px;
-    color:var(--accent-deep);
-    letter-spacing:.05em;
-    margin-bottom:6px;
+    font-weight:700;
+    color:#fff;
+    background:linear-gradient(135deg,#ffa3bd,var(--accent));
+    border-radius:999px;
+    padding:2px 12px 2px 8px;
+    margin-bottom:10px;
   }
+  .wday .wd .ic{color:#fff}
+  .wday.empty .wd{background:var(--accent-soft);color:var(--accent-deep)}
+  .wday.empty .wd .ic{color:var(--accent)}
   .wday .ph{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:6px;
-    margin-bottom:8px;
+    gap:10px;
+    margin:0 2px 10px;
   }
   .wday .ph img{
     width:100%;
     aspect-ratio:1;
     object-fit:cover;
-    border-radius:10px;
-    background:var(--accent-soft);
+    background:#fff;
+    padding:4px 4px 12px;
+    border-radius:4px;
+    box-shadow:0 3px 8px rgba(90,64,73,.18);
   }
+  .wday .ph img:nth-child(1){transform:rotate(-3deg)}
+  .wday .ph img:nth-child(2){transform:rotate(2deg)}
+  .wday .ph img:nth-child(3){transform:rotate(-1.5deg)}
   .wday .memo{
     font-size:14px;
     white-space:pre-wrap;
@@ -225,11 +283,11 @@
   #map{
     position:relative;
     z-index:0;
-    height:calc(100dvh - 230px);
+    height:calc(100dvh - 250px);
     min-height:360px;
-    border-radius:18px;
-    border:1px solid var(--line);
-    box-shadow:var(--shadow);
+    border-radius:26px;
+    border:3px solid #fff;
+    box-shadow:var(--shadow),0 0 0 2px var(--line);
     overflow:hidden;
     background:var(--accent-soft);
   }
@@ -237,39 +295,52 @@
     font-size:12px;
     color:var(--ink-soft);
     text-align:center;
-    margin-top:8px;
+    margin-top:10px;
   }
-  .pin{
-    width:52px;height:52px;
+  /* 地図のピン：お花の真ん中に写真、下に茎と葉っぱ */
+  .pin{position:relative;width:62px;height:78px}
+  .pin .petals{
+    position:absolute;top:0;left:0;
+    width:62px;height:62px;
+    background:var(--accent);
+    -webkit-mask:var(--flower) center/contain no-repeat;
+    mask:var(--flower) center/contain no-repeat;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.2));
+  }
+  .pin .ph{
+    position:absolute;top:13px;left:13px;
+    width:36px;height:36px;
     border-radius:50%;
-    border:3px solid var(--accent);
-    background:#fff;
+    border:2px solid #fff;
     overflow:hidden;
-    box-shadow:0 3px 10px rgba(0,0,0,.25);
+    background:var(--yellow);
     display:flex;align-items:center;justify-content:center;
-    font-size:24px;
   }
-  .pin img{width:100%;height:100%;object-fit:cover;display:block}
-  .pin-wrap{position:relative}
-  .pin-wrap::after{
+  .pin .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .pin .stem{
+    position:absolute;left:29.5px;top:56px;
+    width:3px;height:22px;
+    background:#7cb86a;
+    border-radius:2px;
+  }
+  .pin .stem::after{
     content:"";
-    position:absolute;
-    left:50%;bottom:-8px;
-    margin-left:-7px;
-    border:7px solid transparent;
-    border-top:9px solid var(--accent);
-    border-bottom:0;
+    position:absolute;left:2px;top:6px;
+    width:12px;height:6px;
+    background:var(--leaf);
+    border-radius:0 10px 0 10px;
   }
-  .pop{min-width:170px;max-width:220px;font-family:inherit}
-  .pop .pd{font-size:12px;color:var(--accent-deep);margin-bottom:4px}
+  .leaflet-popup-content-wrapper{border-radius:18px;font-family:var(--font)}
+  .pop{min-width:170px;max-width:220px;font-family:var(--font)}
+  .pop .pd{font-size:12px;font-weight:700;color:var(--accent-deep);margin-bottom:4px}
   .pop .pm{font-size:13px;color:var(--ink);margin-bottom:8px;white-space:pre-wrap;word-break:break-word}
   .pop button{
     appearance:none;border:none;
-    background:var(--accent);color:#fff;
-    font-size:12px;padding:6px 12px;border-radius:999px;cursor:pointer;
+    background:linear-gradient(135deg,#ffa3bd,var(--accent));color:#fff;
+    font-size:12px;font-weight:700;padding:6px 14px;border-radius:999px;cursor:pointer;
   }
 
-  /* 下部のバックアップ */
+  /* ボタン */
   .backup{
     display:flex;
     gap:8px;
@@ -278,43 +349,64 @@
   }
   .btn{
     appearance:none;
-    border:1px solid var(--line);
+    border:2px solid var(--line);
     background:var(--card);
     color:var(--ink);
     font-size:12px;
+    font-weight:700;
     padding:8px 14px;
     border-radius:999px;
     cursor:pointer;
   }
   .btn.primary{
-    background:var(--accent);
-    border-color:var(--accent);
+    background:linear-gradient(135deg,#ffa3bd,var(--accent));
+    border-color:transparent;
     color:#fff;
+    box-shadow:0 4px 12px rgba(217,101,138,.3);
   }
-  .btn.danger{color:#c24c5c}
+  .btn.danger{color:#d4566f}
   .btn:disabled{opacity:.6}
 
+  /* 追加ボタン（お花の形） */
   .fab{
     position:fixed;
-    right:20px;
-    bottom:calc(22px + env(safe-area-inset-bottom));
-    width:58px;height:58px;
-    border-radius:50%;
-    background:var(--accent);
-    color:#fff;
+    right:16px;
+    bottom:calc(18px + env(safe-area-inset-bottom));
+    width:72px;height:72px;
     border:none;
-    font-size:30px;
-    line-height:1;
-    box-shadow:0 8px 20px rgba(200,92,125,.4);
+    padding:0;
+    background:none;
     cursor:pointer;
     z-index:40;
+    filter:drop-shadow(0 6px 10px rgba(217,101,138,.4));
   }
+  .fab::before{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(135deg,#ffa3bd,var(--accent));
+    -webkit-mask:var(--flower) center/contain no-repeat;
+    mask:var(--flower) center/contain no-repeat;
+  }
+  .fab span{
+    position:absolute;
+    left:50%;top:50%;
+    width:32px;height:32px;
+    margin:-16px 0 0 -16px;
+    border-radius:50%;
+    background:var(--yellow);
+    color:#fff;
+    font-size:26px;
+    font-weight:700;
+    line-height:32px;
+    text-align:center;
+  }
+  .fab:active{transform:scale(.94) rotate(8deg)}
 
   /* シート（記録・詳細） */
   .overlay{
     position:fixed;
     inset:0;
-    background:rgba(74,40,52,.38);
+    background:rgba(90,52,66,.35);
     display:none;
     align-items:flex-end;
     justify-content:center;
@@ -322,70 +414,88 @@
   }
   .overlay.open{display:flex}
   .sheet{
+    position:relative;
     background:var(--bg);
     width:100%;
     max-width:520px;
     max-height:92vh;
     max-height:92dvh;
     overflow-y:auto;
-    border-radius:22px 22px 0 0;
-    padding:20px 18px calc(24px + env(safe-area-inset-bottom));
+    border-radius:28px 28px 0 0;
+    padding:26px 18px calc(24px + env(safe-area-inset-bottom));
+    animation:up .25s ease;
+  }
+  @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+  .sheet::before{
+    content:"";
+    position:absolute;top:10px;left:50%;
+    width:44px;height:5px;margin-left:-22px;
+    border-radius:3px;
+    background:var(--line);
   }
   .sheet h2{
-    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
-    font-size:18px;
+    font-size:19px;
+    font-weight:700;
     margin:0 0 6px;
+    display:flex;align-items:center;gap:6px;
   }
+  .sheet h2 .ic{color:var(--accent);width:22px;height:22px}
   label{
     display:block;
     font-size:12px;
-    color:var(--ink-soft);
+    font-weight:700;
+    color:var(--accent-deep);
     margin:14px 0 6px;
   }
   input[type="date"],textarea{
     width:100%;
-    border:1px solid var(--line);
+    border:2px solid var(--line);
     background:var(--card);
-    border-radius:12px;
+    border-radius:16px;
     padding:10px 12px;
     font-size:16px;
     color:var(--ink);
     font-family:inherit;
+    outline:none;
   }
+  input[type="date"]:focus,textarea:focus{border-color:var(--accent)}
   textarea{min-height:110px;resize:vertical}
   .slots{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:8px;
+    gap:10px;
   }
   .slot{
     position:relative;
     aspect-ratio:1;
-    border-radius:12px;
+    border-radius:18px;
     overflow:hidden;
     background:var(--card);
-    border:1px dashed var(--accent);
+    border:2px dashed var(--accent);
   }
   .slot img{width:100%;height:100%;object-fit:cover;display:block}
   .slot .rm{
     position:absolute;top:4px;right:4px;
     width:24px;height:24px;border-radius:50%;
-    background:rgba(0,0,0,.55);color:#fff;border:none;
-    font-size:13px;line-height:24px;padding:0;cursor:pointer;
+    background:rgba(255,255,255,.92);color:var(--accent-deep);border:none;
+    font-size:13px;font-weight:700;line-height:24px;padding:0;cursor:pointer;
   }
   .slot .loc{
     position:absolute;left:4px;bottom:4px;
     font-size:10px;
-    background:rgba(255,255,255,.88);
+    font-weight:700;
+    background:rgba(255,255,255,.92);
     color:var(--accent-deep);
     border-radius:999px;
     padding:1px 6px;
   }
   .slot.add{
-    display:flex;align-items:center;justify-content:center;
-    color:var(--accent);font-size:28px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;
     appearance:none;
+    background:#fff8fa;
   }
+  .slot.add .ic{width:30px;height:30px}
   .geo{
     font-size:12px;
     color:var(--ink-soft);
@@ -400,27 +510,36 @@
 
   .d-photos{
     display:flex;
-    gap:8px;
+    gap:12px;
     overflow-x:auto;
-    margin:10px 0;
+    padding:8px 4px 12px;
+    margin:4px 0 6px;
     -webkit-overflow-scrolling:touch;
   }
   .d-photos img{
     height:190px;
-    max-width:80%;
+    max-width:78%;
     object-fit:cover;
-    border-radius:14px;
+    background:#fff;
+    padding:6px 6px 18px;
+    border-radius:6px;
+    box-shadow:0 4px 12px rgba(90,64,73,.2);
     flex:none;
     cursor:zoom-in;
   }
+  .d-photos img:nth-child(odd){transform:rotate(-2deg)}
+  .d-photos img:nth-child(even){transform:rotate(2deg)}
+  /* メモは便箋風 */
   .d-memo{
     font-size:15px;
+    line-height:28px;
     white-space:pre-wrap;
     word-break:break-word;
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:12px 14px;
+    background:#fff repeating-linear-gradient(transparent 0 27px,#ffe0e9 27px 28px);
+    background-position:0 10px;
+    border:2px solid var(--line);
+    border-radius:18px;
+    padding:10px 16px;
   }
   .d-memo.empty{color:var(--ink-soft);font-size:13px}
   .d-actions{
@@ -433,7 +552,7 @@
 
   .lightbox{
     position:fixed;inset:0;
-    background:rgba(0,0,0,.9);
+    background:rgba(40,20,28,.92);
     display:none;
     align-items:center;justify-content:center;
     z-index:1100;
@@ -445,29 +564,51 @@
     position:fixed;
     left:50%;top:calc(16px + env(safe-area-inset-top));
     transform:translateX(-50%);
-    background:var(--ink);
+    background:var(--accent-deep);
     color:#fff;
     font-size:12px;
-    padding:8px 16px;
+    font-weight:700;
+    padding:8px 18px;
     border-radius:999px;
     opacity:0;
     pointer-events:none;
     transition:opacity .25s;
     z-index:1200;
     white-space:nowrap;
+    box-shadow:0 4px 12px rgba(217,101,138,.35);
   }
-  .toast.show{opacity:.94}
+  .toast.show{opacity:.96}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-flower" viewBox="0 0 100 100">
+    <g fill="currentColor"><circle cx="50" cy="27" r="24"/><circle cx="72" cy="43" r="24"/><circle cx="63.5" cy="69" r="24"/><circle cx="36.5" cy="69" r="24"/><circle cx="28" cy="43" r="24"/></g>
+    <circle cx="50" cy="50" r="15" fill="#ffd66e"/>
+  </symbol>
+  <symbol id="i-tulip" viewBox="0 0 100 100">
+    <path d="M50 62v32" stroke="#8cc47a" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <path d="M50 84c-4-10-14-14-22-12 4 9 12 13 22 12z" fill="#9fcf8c"/>
+    <path d="M24 18l13 14 13-24 13 24 13-14v28c0 17-12 26-26 26S24 63 24 46z" fill="currentColor"/>
+  </symbol>
+  <symbol id="i-pin" viewBox="0 0 100 100">
+    <path d="M50 6C32 6 19 20 19 37c0 24 31 57 31 57s31-33 31-57C81 20 68 6 50 6z" fill="currentColor"/>
+    <g transform="translate(31 18) scale(.38)" fill="#fff"><circle cx="50" cy="27" r="24"/><circle cx="72" cy="43" r="24"/><circle cx="63.5" cy="69" r="24"/><circle cx="36.5" cy="69" r="24"/><circle cx="28" cy="43" r="24"/></g>
+    <circle cx="50" cy="37" r="6" fill="#ffd66e"/>
+  </symbol>
+</svg>
+
 <div class="wrap">
-  <div class="brand">FLOWER DIARY</div>
-  <h1>お花日記</h1>
+  <header class="hero">
+    <div class="brand">FLOWER DIARY</div>
+    <h1><svg class="ic l"><use href="#i-flower"/></svg>お花日記<svg class="ic r"><use href="#i-flower"/></svg></h1>
+    <p class="sub">今日はどんなお花に会えたかな？</p>
+  </header>
 
   <div class="tabs" role="tablist">
-    <button data-tab="month" class="on">月</button>
-    <button data-tab="week">週</button>
-    <button data-tab="map">地図</button>
+    <button data-tab="month" class="on"><svg class="ic"><use href="#i-flower"/></svg>月</button>
+    <button data-tab="week"><svg class="ic"><use href="#i-tulip"/></svg>週</button>
+    <button data-tab="map"><svg class="ic"><use href="#i-pin"/></svg>地図</button>
   </div>
 
   <section class="view on" id="view-month">
@@ -477,7 +618,7 @@
       <button id="mNext" aria-label="次の月">›</button>
     </div>
     <div class="cal" id="cal"></div>
-    <div class="cal-note">左の「週」をタップすると、その週の写真がすべて見られます</div>
+    <div class="cal-note">🌿 左の「週」をタップすると、その週の写真がぜんぶ見られます</div>
 
     <div class="backup">
       <button class="btn" id="btnExport">バックアップを保存</button>
@@ -501,12 +642,12 @@
   </section>
 </div>
 
-<button class="fab" id="btnAdd" aria-label="今日の記録">＋</button>
+<button class="fab" id="btnAdd" aria-label="今日の記録"><span>＋</span></button>
 
 <!-- 記録フォーム -->
 <div class="overlay" id="formSheet">
   <div class="sheet">
-    <h2 id="formTitle">お花を記録する</h2>
+    <h2><svg class="ic"><use href="#i-flower"/></svg><span id="formTitle">お花を記録する</span></h2>
 
     <label for="fDate">日付</label>
     <input type="date" id="fDate">
@@ -529,7 +670,7 @@
 <!-- 詳細 -->
 <div class="overlay" id="detailSheet">
   <div class="sheet">
-    <h2 id="dDate"></h2>
+    <h2><svg class="ic"><use href="#i-flower"/></svg><span id="dDate"></span></h2>
     <div class="d-photos" id="dPhotos"></div>
     <div class="d-memo" id="dMemo"></div>
     <div class="d-actions">
@@ -663,7 +804,7 @@
           cls.push("has-photo");
           inner += '<img src="' + urlOf(e.photos[0].thumb) + '" alt="">';
         }else if(e){
-          inner += '<span class="dot"></span>';
+          inner += '<svg class="mini"><use href="#i-flower"/></svg>';
         }
         html += '<button class="' + cls.join(" ") + '" data-date="' + key + '">' + inner + "</button>";
       }
@@ -700,8 +841,8 @@
     var html = "";
     for(var i = 0; i < 7; i++){
       var d = addDays(viewWeek, i), key = iso(d), e = entries.get(key);
-      html += '<div class="wday' + (key === today ? " today" : "") + '" data-date="' + key + '">';
-      html += '<div class="wd">' + (d.getMonth()+1) + "月" + d.getDate() + "日（" + WEEKDAYS[d.getDay()] + "）</div>";
+      html += '<div class="wday' + (key === today ? " today" : "") + (e ? "" : " empty") + '" data-date="' + key + '">';
+      html += '<div class="wd"><svg class="ic"><use href="#i-flower"/></svg>' + (d.getMonth()+1) + "月" + d.getDate() + "日（" + WEEKDAYS[d.getDay()] + "）</div>";
       if(e){
         if(e.photos.length){
           html += '<div class="ph">' + e.photos.map(function(p){
@@ -745,7 +886,7 @@
     Array.from(entries.values()).sort(function(a, b){ return a.date < b.date ? -1 : 1; }).forEach(function(e){
       var located = e.photos.filter(function(p){ return p.lat != null; });
       located.forEach(function(p){ addPin(e, [p.lat, p.lng], '<img src="' + urlOf(p.thumb) + '" alt="">', points); });
-      if(!located.length && e.lat != null) addPin(e, [e.lat, e.lng], "🌸", points);
+      if(!located.length && e.lat != null) addPin(e, [e.lat, e.lng], "", points);
     });
 
     $("mapMsg").textContent = points.length
@@ -761,10 +902,10 @@
   function addPin(e, latlng, inner, points){
     var icon = L.divIcon({
       className: "",
-      html: '<div class="pin-wrap"><div class="pin">' + inner + "</div></div>",
-      iconSize: [52, 60],
-      iconAnchor: [26, 60],
-      popupAnchor: [0, -58]
+      html: '<div class="pin"><div class="petals"></div><div class="ph">' + inner + '</div><div class="stem"></div></div>',
+      iconSize: [62, 78],
+      iconAnchor: [31, 78],
+      popupAnchor: [0, -72]
     });
     var box = document.createElement("div");
     box.className = "pop";
@@ -884,7 +1025,7 @@
         '<button class="rm" data-i="' + i + '" aria-label="写真を外す">×</button>' +
         (badge ? '<span class="loc">' + badge + "</span>" : "") + "</div>";
     }).join("");
-    if(form.photos.length < MAX_PHOTOS) html += '<button class="slot add" id="slotAdd" aria-label="写真を追加">＋</button>';
+    if(form.photos.length < MAX_PHOTOS) html += '<button class="slot add" id="slotAdd" aria-label="写真を追加"><svg class="ic"><use href="#i-flower"/></svg>写真を追加</button>';
     $("slots").innerHTML = html;
   }
 
