@@ -1067,13 +1067,17 @@
   });
 
   function renderRecent(){
-    var list = Array.from(entries.values())
-      .filter(function(e){ return e.photos.length; })
+    // 新しい日から順に、その日の写真をすべて並べる
+    var list = [];
+    Array.from(entries.values())
       .sort(function(a, b){ return a.date < b.date ? 1 : -1; })
-      .slice(0, 14);
-    $("recent").innerHTML = list.length ? list.map(function(e){
-      var d = parseIso(e.date);
-      return '<button data-date="' + e.date + '"><img src="' + urlOf(e.photos[0].thumb) + '" alt="">' +
+      .forEach(function(e){
+        e.photos.forEach(function(p){ list.push({ date: e.date, photo: p }); });
+      });
+    list = list.slice(0, 30);
+    $("recent").innerHTML = list.length ? list.map(function(item){
+      var d = parseIso(item.date);
+      return '<button data-date="' + item.date + '"><img src="' + urlOf(item.photo.thumb) + '" alt="">' +
         "<span>" + (d.getMonth()+1) + "/" + d.getDate() + "</span></button>";
     }).join("") : '<div class="strip-empty">写真を記録すると、ここに並びます 🌱</div>';
   }
