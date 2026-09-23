@@ -47,7 +47,7 @@
     margin:0 auto;
     min-height:100vh;
     min-height:100dvh;
-    padding:calc(6px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) calc(88px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
+    padding:0 calc(8px + env(safe-area-inset-right)) calc(88px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
     display:flex;
     flex-direction:column;
   }
@@ -56,6 +56,19 @@
 
   /* ヘッダー */
   .hero{text-align:center;margin:0 0 6px}
+  /* タイトルとタブは、スクロールしても画面の上に残す */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:30;
+    margin:0 calc(-8px - env(safe-area-inset-right)) 8px calc(-8px - env(safe-area-inset-left));
+    padding:calc(6px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 8px calc(8px + env(safe-area-inset-left));
+    background:rgba(255,244,247,.97);
+    -webkit-backdrop-filter:blur(10px);
+    backdrop-filter:blur(10px);
+    transition:box-shadow .2s;
+  }
+  .topbar.scrolled{box-shadow:0 6px 14px -8px rgba(217,101,138,.35)}
   .brand{
     font-size:11px;
     letter-spacing:.3em;
@@ -83,7 +96,6 @@
     border:2px solid var(--line);
     border-radius:999px;
     padding:3px;
-    margin-bottom:8px;
   }
   .tabs button{
     flex:1;
@@ -844,6 +856,7 @@
 </svg>
 
 <div class="wrap">
+  <div class="topbar" id="topbar">
   <header class="hero">
     <button class="gear" id="btnSettings" aria-label="バックアップ">
       <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
@@ -857,6 +870,7 @@
     <button data-tab="month" class="on"><svg class="ic"><use href="#i-flower"/></svg>月</button>
     <button data-tab="week"><svg class="ic"><use href="#i-tulip"/></svg>週</button>
     <button data-tab="map"><svg class="ic"><use href="#i-pin"/></svg>地図</button>
+  </div>
   </div>
 
   <section class="view on" id="view-month">
@@ -1090,6 +1104,10 @@
     if(currentTab === "map") renderMap();
   }
 
+  window.addEventListener("scroll", function(){
+    $("topbar").classList.toggle("scrolled", window.pageYOffset > 4);
+  }, { passive: true });
+
   function switchTab(tab){
     currentTab = tab;
     document.body.classList.toggle("tab-map", tab === "map");
@@ -1221,7 +1239,8 @@
     if(!b) return;
     viewMonth = startOfMonth(parseIso(b.dataset.date));
     selectDay(b.dataset.date);
-    $("cal").scrollIntoView({ behavior: "smooth", block: "start" });
+    var top = $("cal").getBoundingClientRect().top + window.pageYOffset - $("topbar").offsetHeight - 50;
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
   });
 
   // 週・地図から：記録がある日は詳細、ない日（今日まで）は新規記録
