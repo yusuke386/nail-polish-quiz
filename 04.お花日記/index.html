@@ -507,6 +507,90 @@
     cursor:pointer;
   }
 
+  /* 花の名前と花言葉（入力） */
+  .frow{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    background:var(--card);
+    border:2px solid var(--line);
+    border-radius:16px;
+    padding:8px 10px;
+    margin-bottom:8px;
+  }
+  .frow > img{
+    width:52px;height:52px;
+    object-fit:cover;
+    flex:none;
+    margin-top:4px;
+    -webkit-mask:var(--flower) center/contain no-repeat;
+    mask:var(--flower) center/contain no-repeat;
+  }
+  .fcol{flex:1;min-width:0}
+  .frow input{
+    width:100%;
+    border:none;
+    border-bottom:2px dashed var(--line);
+    border-radius:0;
+    background:transparent;
+    padding:6px 2px;
+    font-size:16px;
+    font-family:inherit;
+    color:var(--ink);
+    outline:none;
+  }
+  .frow input:focus{border-bottom-color:var(--accent)}
+  .frow input.fwords{color:var(--accent-deep)}
+  .sugg{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+  .sugg:empty{display:none}
+  .sugg button{
+    appearance:none;
+    border:none;
+    background:var(--accent-soft);
+    color:var(--accent-deep);
+    font-size:12px;
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+
+  /* 花言葉カード（表示） */
+  .hk-list{display:flex;flex-direction:column;gap:6px;margin:0 0 10px}
+  .hk{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:linear-gradient(135deg,#fff7fa,#ffeef4);
+    border:2px dashed #ffc9d8;
+    border-radius:16px;
+    padding:6px 12px 6px 8px;
+  }
+  .hk img{
+    width:42px;height:42px;
+    object-fit:cover;
+    flex:none;
+    -webkit-mask:var(--flower) center/contain no-repeat;
+    mask:var(--flower) center/contain no-repeat;
+  }
+  .hk div{min-width:0}
+  .hk b{display:block;font-size:13px;color:var(--ink);line-height:1.4}
+  .hk span{display:block;font-size:12px;color:var(--accent-deep);line-height:1.5}
+  .hk span::before{
+    content:"花言葉";
+    display:inline-block;
+    font-size:9px;
+    font-weight:700;
+    color:#fff;
+    background:var(--accent);
+    border-radius:999px;
+    padding:0 6px;
+    margin-right:5px;
+    vertical-align:1px;
+  }
+  .pop .pf{font-size:12px;margin-bottom:6px;color:var(--ink)}
+  .pop .pf small{display:block;color:var(--accent-deep);font-size:12px}
+
   /* ボタン */
   .btn{
     appearance:none;
@@ -821,6 +905,7 @@
     <div class="slots" id="slots"></div>
     <input type="file" id="fPhoto" accept="image/*" multiple hidden>
     <div class="geo" id="geoStatus"></div>
+    <div id="flowerRows"></div>
 
     <label for="fMemo">メモ</label>
     <textarea id="fMemo" placeholder="見つけた場所、色や香り、感じたことなど"></textarea>
@@ -852,6 +937,7 @@
   <div class="sheet">
     <h2><svg class="ic"><use href="#i-flower"/></svg><span id="dDate"></span></h2>
     <div class="d-photos" id="dPhotos"></div>
+    <div class="hk-list" id="dHk"></div>
     <div class="d-memo" id="dMemo"></div>
     <div class="d-actions">
       <button class="btn" id="dMap">地図で見る</button>
@@ -866,6 +952,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="hanakotoba.js"></script>
 <script>
 (function(){
   "use strict";
@@ -899,6 +986,51 @@
   function fmtLong(s){
     var d = parseIso(s);
     return d.getFullYear() + "年" + (d.getMonth()+1) + "月" + d.getDate() + "日（" + WEEKDAYS[d.getDay()] + "）";
+  }
+
+  // ---------- 花言葉 ----------
+  // ひらがなで打ってもカタカナの花の名前にヒットするように、カタカナにそろえて比べる
+  function norm(s){
+    return String(s || "").replace(/[\u3041-\u3096]/g, function(c){
+      return String.fromCharCode(c.charCodeAt(0) + 0x60);
+    }).replace(/\s/g, "").toLowerCase();
+  }
+  var DICT = (window.HANAKOTOBA || []).map(function(r){
+    var paren = r[0].match(/（(.+?)）/);
+    return { name: r[0], words: r[1], key: norm(r[0]), base: norm(r[0].split("（")[0]), paren: norm(paren ? paren[1] : "") };
+  });
+  // 「サクラ」「桜」のように括弧の外・中だけでも見つける
+  function lookup(name){
+    var k = norm(name);
+    if(!k) return null;
+    var exact = DICT.filter(function(d){ return d.key === k; })[0];
+    return exact || DICT.filter(function(d){ return d.base === k || d.paren === k; })[0] || null;
+  }
+  function suggest(q){
+    var k = norm(q), starts = [], contains = [];
+    if(!k) return [];
+    DICT.forEach(function(d){
+      var i = d.key.indexOf(k);
+      if(i === 0) starts.push(d);
+      else if(i > 0) contains.push(d);
+    });
+    return starts.concat(contains).slice(0, 8);
+  }
+  function flowerOf(p){ return p.flower && p.flower.name ? p.flower : null; }
+  // 写真ごとの花言葉カード（同じ花が続くときは1つにまとめる）
+  function hkList(photos){
+    var seen = {};
+    return photos.filter(function(p){
+      var f = flowerOf(p);
+      if(!f) return false;
+      var k = f.name + "|" + f.words;
+      if(seen[k]) return false;
+      return (seen[k] = true);
+    }).map(function(p){
+      var f = p.flower;
+      return '<div class="hk"><img src="' + urlOf(p.thumb) + '" alt=""><div><b>' + esc(f.name) + "</b>" +
+        (f.words ? "<span>" + esc(f.words) + "</span>" : "") + "</div></div>";
+    }).join("");
   }
 
   // ---------- 保存（IndexedDB） ----------
@@ -1048,6 +1180,8 @@
           return '<img src="' + urlOf(p.full) + '" alt="">';
         }).join("") + "</div>";
       }
+      var hk = hkList(e.photos);
+      if(hk) html += '<div class="hk-list">' + hk + "</div>";
       if(e.memo) html += '<div class="p-memo">' + esc(e.memo) + "</div>";
     }else if(date <= todayIso()){
       html = '<div class="p-head">' + head + "</div>" +
@@ -1112,6 +1246,8 @@
             return '<img src="' + urlOf(p.full) + '" alt="">';
           }).join("") + "</div>";
         }
+        var hk = hkList(e.photos);
+        if(hk) html += '<div class="hk-list">' + hk + "</div>";
         if(e.memo) html += '<div class="memo">' + esc(e.memo) + "</div>";
       }else{
         html += '<div class="none">' + (key <= today ? "記録なし（タップして記録）" : "—") + "</div>";
@@ -1148,7 +1284,7 @@
     var points = [];
     Array.from(entries.values()).sort(function(a, b){ return a.date < b.date ? -1 : 1; }).forEach(function(e){
       var located = e.photos.filter(function(p){ return p.lat != null; });
-      located.forEach(function(p){ addPin(e, [p.lat, p.lng], '<img src="' + urlOf(p.thumb) + '" alt="">', points); });
+      located.forEach(function(p){ addPin(e, [p.lat, p.lng], '<img src="' + urlOf(p.thumb) + '" alt="">', points, p); });
       if(!located.length && e.lat != null) addPin(e, [e.lat, e.lng], "", points);
     });
 
@@ -1162,7 +1298,8 @@
     else map.setView([36.2, 138.25], 5);
   }
 
-  function addPin(e, latlng, inner, points){
+  function addPin(e, latlng, inner, points, photo){
+    var f = photo ? flowerOf(photo) : null;
     var icon = L.divIcon({
       className: "",
       html: '<div class="pin"><div class="petals"></div><div class="ph">' + inner + '</div><div class="stem"></div></div>',
@@ -1174,6 +1311,7 @@
     box.className = "pop";
     box.innerHTML =
       '<div class="pd">' + esc(fmtLong(e.date)) + "</div>" +
+      (f ? '<div class="pf">🌷 ' + esc(f.name) + (f.words ? "<small>花言葉：" + esc(f.words) + "</small>" : "") + "</div>" : "") +
       (e.memo ? '<div class="pm">' + esc(e.memo.length > 60 ? e.memo.slice(0, 60) + "…" : e.memo) + "</div>" : "") +
       "<button>この日の記録を見る</button>";
     box.querySelector("button").addEventListener("click", function(){ openDetail(e.date); });
@@ -1198,6 +1336,8 @@
       return '<img src="' + urlOf(p.full) + '" alt="">';
     }).join("");
     $("dPhotos").style.display = e.photos.length ? "" : "none";
+    $("dHk").innerHTML = hkList(e.photos);
+    $("dHk").style.display = $("dHk").innerHTML ? "" : "none";
     $("dMemo").textContent = e.memo || "メモはありません";
     $("dMemo").classList.toggle("empty", !e.memo);
     $("dMap").style.display = firstLocation(e) ? "" : "none";
@@ -1300,7 +1440,72 @@
     }).join("");
     if(form.photos.length < MAX_PHOTOS) html += '<button class="slot add" id="slotAdd" aria-label="写真を追加"><svg class="ic"><use href="#i-flower"/></svg>写真を追加</button>';
     $("slots").innerHTML = html;
+    renderFlowerRows();
   }
+
+  // 写真ごとに「花の名前」と「花言葉」を入力する欄
+  function renderFlowerRows(){
+    $("flowerRows").innerHTML = form.photos.length ? "<label>花の名前と花言葉</label>" + form.photos.map(function(p, i){
+      var f = p.flower || {};
+      return '<div class="frow" data-i="' + i + '" data-auto="' + (f.words && lookup(f.name) && lookup(f.name).words === f.words ? 1 : 0) + '">' +
+        '<img src="' + urlOf(p.thumb) + '" alt="">' +
+        '<div class="fcol">' +
+          '<input class="fname" placeholder="花の名前（例：チューリップ）" autocomplete="off" value="' + esc(f.name || "") + '">' +
+          '<div class="sugg"></div>' +
+          '<input class="fwords" placeholder="花言葉（名前を選ぶと自動で入ります）" autocomplete="off" value="' + esc(f.words || "") + '">' +
+        "</div></div>";
+    }).join("") : "";
+  }
+
+  function setFlower(i, patch){
+    var p = form.photos[i];
+    var f = Object.assign({ name: "", words: "" }, p.flower || {}, patch);
+    form.photos[i] = Object.assign({}, p, { flower: f });
+  }
+
+  function pickFlower(row, d){
+    row.querySelector(".fname").value = d.name;
+    row.querySelector(".fwords").value = d.words;
+    row.querySelector(".sugg").innerHTML = "";
+    row.dataset.auto = "1";
+    setFlower(Number(row.dataset.i), { name: d.name, words: d.words });
+  }
+
+  $("flowerRows").addEventListener("input", function(ev){
+    var row = ev.target.closest(".frow");
+    if(!row) return;
+    var i = Number(row.dataset.i);
+    if(ev.target.classList.contains("fname")){
+      var name = ev.target.value, words = row.querySelector(".fwords");
+      var hit = lookup(name);
+      // 自動で入れた花言葉だけ書き換える（自分で書いた花言葉は消さない）
+      if(!words.value || row.dataset.auto === "1"){
+        words.value = hit ? hit.words : "";
+        row.dataset.auto = hit ? "1" : "0";
+      }
+      setFlower(i, { name: name.trim(), words: words.value.trim() });
+      row._sugg = suggest(name).filter(function(d){ return d.name !== name; });
+      row.querySelector(".sugg").innerHTML = row._sugg.map(function(d, n){
+        return '<button type="button" data-n="' + n + '">' + esc(d.name) + "</button>";
+      }).join("");
+    }else if(ev.target.classList.contains("fwords")){
+      row.dataset.auto = "0";
+      setFlower(i, { words: ev.target.value.trim() });
+    }
+  });
+  // 候補のタップは、入力欄のフォーカスが外れる前に拾う
+  $("flowerRows").addEventListener("pointerdown", function(ev){
+    var b = ev.target.closest(".sugg button");
+    if(!b) return;
+    ev.preventDefault();
+    var row = b.closest(".frow");
+    pickFlower(row, row._sugg[Number(b.dataset.n)]);
+  });
+  $("flowerRows").addEventListener("focusout", function(ev){
+    if(!ev.target.classList.contains("fname")) return;
+    var sugg = ev.target.closest(".frow").querySelector(".sugg");
+    setTimeout(function(){ sugg.innerHTML = ""; }, 200);
+  });
 
   $("slots").addEventListener("click", function(ev){
     var rm = ev.target.closest(".rm");
@@ -1437,6 +1642,10 @@
     wait.then(function(here){
       var prev = f.original ? entries.get(f.original) : null;
       var photos = f.photos.map(function(p){
+        if(p.flower && !p.flower.name){
+          p = Object.assign({}, p);
+          delete p.flower;
+        }
         if(p.lat == null && isToday && here) return Object.assign({}, p, { lat: here.lat, lng: here.lng, loc: "here" });
         return p;
       });
