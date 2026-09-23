@@ -346,13 +346,168 @@
     font-size:12px;font-weight:700;padding:6px 14px;border-radius:999px;cursor:pointer;
   }
 
-  /* ボタン */
-  .backup{
-    display:flex;
-    gap:8px;
-    justify-content:center;
-    margin-top:12px;
+  /* ヘッダー右上の設定ボタン */
+  .hero{position:relative}
+  .gear{
+    position:absolute;
+    top:4px;right:0;
+    width:34px;height:34px;
+    border:none;
+    border-radius:50%;
+    background:rgba(255,255,255,.85);
+    box-shadow:0 0 0 2px var(--line);
+    color:var(--accent);
+    padding:7px;
+    cursor:pointer;
   }
+  .gear svg{width:100%;height:100%;display:block}
+
+  /* カレンダーの下：選んだ日のお花 */
+  .day.sel{box-shadow:0 0 0 2px var(--accent-deep) inset}
+  .panel{
+    position:relative;
+    margin-top:10px;
+    background:var(--card);
+    border:2px solid var(--line);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    padding:10px 10px 12px;
+  }
+  .panel::after{
+    content:"";
+    position:absolute;
+    right:-4px;bottom:-8px;
+    width:28px;height:28px;
+    background:#ffc1d2;
+    -webkit-mask:var(--flower) center/contain no-repeat;
+    mask:var(--flower) center/contain no-repeat;
+    transform:rotate(18deg);
+  }
+  .p-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:6px;
+    margin-bottom:8px;
+  }
+  .ribbon{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:13px;
+    font-weight:700;
+    color:#fff;
+    background:linear-gradient(135deg,#ffa3bd,var(--accent));
+    border-radius:999px;
+    padding:2px 12px 2px 8px;
+  }
+  .ribbon .ic{color:#fff}
+  .p-btns{display:flex;gap:6px}
+  .chip{
+    appearance:none;
+    border:none;
+    background:var(--accent-soft);
+    color:var(--accent-deep);
+    font-size:12px;
+    font-weight:700;
+    padding:4px 12px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .p-photos{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin:4px 4px 12px;
+  }
+  .p-photos.n1{grid-template-columns:1fr;max-width:72%;margin-left:auto;margin-right:auto}
+  .p-photos.n2{grid-template-columns:repeat(2,1fr)}
+  .p-photos img{
+    width:100%;
+    aspect-ratio:1;
+    object-fit:cover;
+    background:#fff;
+    padding:5px 5px 16px;
+    border-radius:5px;
+    box-shadow:0 3px 10px rgba(90,64,73,.2);
+    cursor:zoom-in;
+  }
+  .p-photos img:nth-child(1){transform:rotate(-3deg)}
+  .p-photos img:nth-child(2){transform:rotate(2.5deg)}
+  .p-photos img:nth-child(3){transform:rotate(-1.5deg)}
+  .p-memo{
+    font-size:14px;
+    line-height:26px;
+    white-space:pre-wrap;
+    word-break:break-word;
+    background:#fffafb repeating-linear-gradient(transparent 0 25px,#ffe0e9 25px 26px);
+    background-position:0 8px;
+    border-radius:14px;
+    padding:8px 12px;
+  }
+  .p-empty{
+    text-align:center;
+    padding:6px 0 4px;
+  }
+  .p-empty svg{width:84px;height:84px;display:block;margin:0 auto 4px}
+  .p-empty p{margin:0 0 10px;font-size:13px;color:var(--ink-soft)}
+
+  /* 最近のお花 */
+  .recent{margin-top:14px}
+  .sec-title{
+    display:flex;align-items:center;gap:5px;
+    font-size:13px;
+    font-weight:700;
+    color:var(--accent-deep);
+    margin:0 4px 6px;
+  }
+  .sec-title .ic{color:var(--accent);width:16px;height:16px}
+  .strip{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    padding:4px 4px 8px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .strip::-webkit-scrollbar{display:none}
+  .strip button{
+    flex:none;
+    appearance:none;
+    border:none;
+    background:none;
+    padding:0;
+    width:70px;
+    text-align:center;
+    cursor:pointer;
+  }
+  .strip img{
+    width:70px;height:70px;
+    object-fit:cover;
+    display:block;
+    -webkit-mask:var(--flower) center/contain no-repeat;
+    mask:var(--flower) center/contain no-repeat;
+  }
+  .strip span{
+    display:block;
+    font-size:11px;
+    font-weight:700;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .strip-empty{font-size:12px;color:var(--ink-soft);margin:0 4px}
+
+  .settings-note{font-size:12px;color:var(--ink-soft);margin:4px 0 14px;line-height:1.7}
+  .settings-btns{display:flex;flex-direction:column;gap:10px}
+  .settings-btns .btn{padding:12px;font-size:14px}
+  .link-del{
+    display:block;
+    margin:14px auto 0;
+    appearance:none;border:none;background:none;
+    color:#d4566f;font-size:12px;font-weight:700;
+    text-decoration:underline;
+    cursor:pointer;
+  }
+
+  /* ボタン */
   .btn{
     appearance:none;
     border:2px solid var(--line);
@@ -606,6 +761,9 @@
 
 <div class="wrap">
   <header class="hero">
+    <button class="gear" id="btnSettings" aria-label="バックアップ">
+      <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+    </button>
     <div class="brand">FLOWER DIARY</div>
     <h1><svg class="ic l"><use href="#i-flower"/></svg>お花日記<svg class="ic r"><use href="#i-flower"/></svg></h1>
     <p class="sub">今日はどんなお花に会えたかな？</p>
@@ -626,10 +784,11 @@
     <div class="cal" id="cal"></div>
     <div class="cal-note">🌿 左の「週」をタップすると、その週の写真がぜんぶ見られます</div>
 
-    <div class="backup">
-      <button class="btn" id="btnExport">バックアップを保存</button>
-      <button class="btn" id="btnImport">バックアップを読み込む</button>
-      <input type="file" id="fileImport" accept="application/json,.json" hidden>
+    <div class="panel" id="dayPanel"></div>
+
+    <div class="recent">
+      <div class="sec-title"><svg class="ic"><use href="#i-tulip"/></svg>最近のお花</div>
+      <div class="strip" id="recent"></div>
     </div>
   </section>
 
@@ -670,6 +829,21 @@
       <button class="btn" id="btnCancel">やめる</button>
       <button class="btn primary" id="btnSave">保存する</button>
     </div>
+    <button class="link-del" id="fDelete">この日の記録を削除する</button>
+  </div>
+</div>
+
+<!-- バックアップ -->
+<div class="overlay" id="settingsSheet">
+  <div class="sheet">
+    <h2><svg class="ic"><use href="#i-flower"/></svg>バックアップ</h2>
+    <p class="settings-note">記録はこのスマホの中だけに保存されています。機種変更に備えて、ときどき写真ごとファイルに保存しておくと安心です。新しいスマホでは「読み込む」を選ぶと記録が戻ります。</p>
+    <div class="settings-btns">
+      <button class="btn primary" id="btnExport">バックアップを保存する</button>
+      <button class="btn" id="btnImport">バックアップを読み込む</button>
+      <button class="btn" id="btnSettingsClose">閉じる</button>
+    </div>
+    <input type="file" id="fileImport" accept="application/json,.json" hidden>
   </div>
 </div>
 
@@ -711,6 +885,7 @@
   var viewMonth = startOfMonth(new Date());
   var viewWeek = startOfWeek(new Date());
   var detailDate = null;
+  var selectedDate = todayIso();
   var form = null;
 
   // ---------- 日付 ----------
@@ -771,6 +946,8 @@
 
   function renderAll(){
     renderMonth();
+    renderPanel();
+    renderRecent();
     renderWeek();
     if(currentTab === "map") renderMap();
   }
@@ -805,6 +982,7 @@
         var cls = ["day"];
         if(d.getMonth() !== m) cls.push("out");
         if(key === today) cls.push("today");
+        if(key === selectedDate) cls.push("sel");
         if(key > today) cls.push("future");
         var inner = '<span class="n">' + d.getDate() + "</span>";
         if(e && e.photos.length){
@@ -829,12 +1007,80 @@
       return;
     }
     var day = ev.target.closest(".day");
-    if(day) openDay(day.dataset.date);
+    if(day && day.dataset.date <= todayIso()) selectDay(day.dataset.date);
   });
   $("mPrev").addEventListener("click", function(){ viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1); renderMonth(); });
   $("mNext").addEventListener("click", function(){ viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1); renderMonth(); });
 
-  // 記録がある日は詳細、ない日（今日まで）は新規記録
+  // ---------- カレンダーの下：選んだ日のお花 ----------
+  var POT_SVG = '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+    '<path d="M50 58V34" stroke="#8cc47a" stroke-width="4" stroke-linecap="round"/>' +
+    '<path d="M50 44c-3-9-12-13-20-11 2 9 11 13 20 11z" fill="#9fcf8c"/>' +
+    '<path d="M50 38c3-9 12-13 20-11-2 9-11 13-20 11z" fill="#b6dca5"/>' +
+    '<g transform="translate(38 10) scale(.24)" fill="#f28bab"><circle cx="50" cy="27" r="24"/><circle cx="72" cy="43" r="24"/><circle cx="63.5" cy="69" r="24"/><circle cx="36.5" cy="69" r="24"/><circle cx="28" cy="43" r="24"/><circle cx="50" cy="50" r="14" fill="#ffd66e"/></g>' +
+    '<path d="M28 58h44l-6 30H34z" fill="#ffc1d2"/><rect x="25" y="54" width="50" height="9" rx="4" fill="#f28bab"/>' +
+    "</svg>";
+
+  function selectDay(date){
+    selectedDate = date;
+    renderMonth();
+    renderPanel();
+  }
+
+  function renderPanel(){
+    var date = selectedDate, e = entries.get(date);
+    var d = parseIso(date);
+    var head = '<span class="ribbon"><svg class="ic"><use href="#i-flower"/></svg>' +
+      (date === todayIso() ? "今日 " : "") + (d.getMonth()+1) + "月" + d.getDate() + "日（" + WEEKDAYS[d.getDay()] + "）</span>";
+    var html;
+    if(e){
+      html = '<div class="p-head">' + head + '<div class="p-btns">' +
+        (firstLocation(e) ? '<button class="chip" data-act="map">地図</button>' : "") +
+        '<button class="chip" data-act="edit">編集</button></div></div>';
+      if(e.photos.length){
+        html += '<div class="p-photos n' + e.photos.length + '">' + e.photos.map(function(p){
+          return '<img src="' + urlOf(p.full) + '" alt="">';
+        }).join("") + "</div>";
+      }
+      if(e.memo) html += '<div class="p-memo">' + esc(e.memo) + "</div>";
+    }else if(date <= todayIso()){
+      html = '<div class="p-head">' + head + "</div>" +
+        '<div class="p-empty">' + POT_SVG +
+        "<p>" + (date === todayIso() ? "今日はどんなお花に会えたかな？" : "この日の記録はまだないよ") + "</p>" +
+        '<button class="btn primary" data-act="add">この日のお花を記録する</button></div>';
+    }
+    $("dayPanel").innerHTML = html || "";
+  }
+
+  $("dayPanel").addEventListener("click", function(ev){
+    if(ev.target.tagName === "IMG"){ showLightbox(ev.target.src); return; }
+    var btn = ev.target.closest("[data-act]");
+    if(!btn) return;
+    if(btn.dataset.act === "edit" || btn.dataset.act === "add") openForm(selectedDate);
+    else if(btn.dataset.act === "map") showOnMap(selectedDate);
+  });
+
+  function renderRecent(){
+    var list = Array.from(entries.values())
+      .filter(function(e){ return e.photos.length; })
+      .sort(function(a, b){ return a.date < b.date ? 1 : -1; })
+      .slice(0, 14);
+    $("recent").innerHTML = list.length ? list.map(function(e){
+      var d = parseIso(e.date);
+      return '<button data-date="' + e.date + '"><img src="' + urlOf(e.photos[0].thumb) + '" alt="">' +
+        "<span>" + (d.getMonth()+1) + "/" + d.getDate() + "</span></button>";
+    }).join("") : '<div class="strip-empty">写真を記録すると、ここに並びます 🌱</div>';
+  }
+
+  $("recent").addEventListener("click", function(ev){
+    var b = ev.target.closest("button[data-date]");
+    if(!b) return;
+    viewMonth = startOfMonth(parseIso(b.dataset.date));
+    selectDay(b.dataset.date);
+    $("cal").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // 週・地図から：記録がある日は詳細、ない日（今日まで）は新規記録
   function openDay(date){
     if(entries.has(date)) openDetail(date);
     else if(date <= todayIso()) openForm(date);
@@ -948,30 +1194,39 @@
     openOverlay("detailSheet");
   }
 
-  $("dPhotos").addEventListener("click", function(ev){
-    if(ev.target.tagName !== "IMG") return;
-    $("lightbox").querySelector("img").src = ev.target.src;
+  function showLightbox(src){
+    $("lightbox").querySelector("img").src = src;
     openOverlay("lightbox");
+  }
+  $("dPhotos").addEventListener("click", function(ev){
+    if(ev.target.tagName === "IMG") showLightbox(ev.target.src);
   });
   $("lightbox").addEventListener("click", function(){ closeOverlay("lightbox"); });
   $("dClose").addEventListener("click", function(){ closeOverlay("detailSheet"); });
   $("detailSheet").addEventListener("click", function(ev){ if(ev.target.id === "detailSheet") closeOverlay("detailSheet"); });
   $("dEdit").addEventListener("click", function(){ closeOverlay("detailSheet"); openForm(detailDate); });
-  $("dMap").addEventListener("click", function(){
-    var loc = firstLocation(entries.get(detailDate));
-    closeOverlay("detailSheet");
+  function showOnMap(date){
+    var loc = firstLocation(entries.get(date));
     switchTab("map");
     if(loc && map) renderMap(loc);
+  }
+  $("dMap").addEventListener("click", function(){
+    closeOverlay("detailSheet");
+    showOnMap(detailDate);
   });
-  $("dDelete").addEventListener("click", function(){
-    if(!confirm(fmtLong(detailDate) + " の記録を削除しますか？")) return;
-    dbDelete(detailDate).then(function(){
-      entries.delete(detailDate);
-      closeOverlay("detailSheet");
+
+  function deleteEntry(date, sheet){
+    if(!confirm(fmtLong(date) + " の記録を削除しますか？")) return;
+    dbDelete(date).then(function(){
+      entries.delete(date);
+      closeOverlay(sheet);
+      if(sheet === "formSheet") form = null;
       renderAll();
       toast("削除しました");
     }).catch(function(){ toast("削除できませんでした"); });
-  });
+  }
+  $("dDelete").addEventListener("click", function(){ deleteEntry(detailDate, "detailSheet"); });
+  $("fDelete").addEventListener("click", function(){ if(form && form.original) deleteEntry(form.original, "formSheet"); });
 
   // ---------- 記録フォーム ----------
   function getHere(){
@@ -997,6 +1252,7 @@
     $("formTitle").textContent = e ? "記録を編集" : "お花を記録する";
     $("fDate").value = date;
     $("fMemo").value = e ? e.memo : "";
+    $("fDelete").style.display = e ? "" : "none";
     renderSlots();
     updateGeo();
     openOverlay("formSheet");
@@ -1188,6 +1444,8 @@
       }).then(function(){
         if(f.original) entries.delete(f.original);
         entries.set(date, entry);
+        selectedDate = date;
+        viewMonth = startOfMonth(parseIso(date));
         closeOverlay("formSheet");
         form = null;
         renderAll();
@@ -1255,6 +1513,7 @@
           return dbPut(entry).then(function(){ entries.set(entry.date, entry); });
         });
       })).then(function(){
+        closeOverlay("settingsSheet");
         renderAll();
         toast("読み込みました（" + fresh.length + "日分を追加）");
       });
@@ -1268,6 +1527,9 @@
   document.querySelectorAll(".tabs button").forEach(function(b){
     b.addEventListener("click", function(){ switchTab(b.dataset.tab); });
   });
+  $("btnSettings").addEventListener("click", function(){ openOverlay("settingsSheet"); });
+  $("btnSettingsClose").addEventListener("click", function(){ closeOverlay("settingsSheet"); });
+  $("settingsSheet").addEventListener("click", function(ev){ if(ev.target.id === "settingsSheet") closeOverlay("settingsSheet"); });
   $("formSheet").addEventListener("click", function(ev){
     if(ev.target.id === "formSheet"){ closeOverlay("formSheet"); form = null; }
   });
