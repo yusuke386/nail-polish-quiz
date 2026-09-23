@@ -47,11 +47,15 @@
     margin:0 auto;
     min-height:100vh;
     min-height:100dvh;
-    padding:calc(14px + env(safe-area-inset-top)) 16px calc(104px + env(safe-area-inset-bottom));
+    padding:calc(6px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) calc(88px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
+    display:flex;
+    flex-direction:column;
   }
+  /* 地図タブでは地図を画面いっぱいに */
+  body.tab-map .wrap{padding-bottom:calc(8px + env(safe-area-inset-bottom))}
 
   /* ヘッダー */
-  .hero{text-align:center;margin:4px 0 16px}
+  .hero{text-align:center;margin:0 0 6px}
   .brand{
     font-size:11px;
     letter-spacing:.3em;
@@ -60,15 +64,16 @@
   }
   h1{
     font-weight:700;
-    font-size:26px;
+    font-size:23px;
+    line-height:1.35;
     letter-spacing:.1em;
     margin:0;
     display:flex;align-items:center;justify-content:center;gap:10px;
   }
-  h1 .ic{width:26px;height:26px}
+  h1 .ic{width:22px;height:22px}
   h1 .ic.l{color:var(--accent);transform:rotate(-12deg)}
   h1 .ic.r{color:#ffb3c7;transform:rotate(14deg)}
-  .sub{margin:2px 0 0;font-size:12px;color:var(--ink-soft)}
+  .sub{margin:0;font-size:11px;line-height:1.4;color:var(--ink-soft)}
 
   /* タブ */
   .tabs{
@@ -77,8 +82,8 @@
     background:rgba(255,255,255,.75);
     border:2px solid var(--line);
     border-radius:999px;
-    padding:5px;
-    margin-bottom:16px;
+    padding:3px;
+    margin-bottom:8px;
   }
   .tabs button{
     flex:1;
@@ -88,7 +93,7 @@
     color:var(--accent-deep);
     font-size:14px;
     font-weight:700;
-    padding:8px 0;
+    padding:6px 0;
     border-radius:999px;
     cursor:pointer;
     display:flex;align-items:center;justify-content:center;gap:5px;
@@ -108,10 +113,10 @@
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:10px;
+    margin-bottom:6px;
   }
   .nav .label{
-    font-size:19px;
+    font-size:17px;
     font-weight:700;
     letter-spacing:.05em;
     background:var(--card);
@@ -124,7 +129,7 @@
     border:none;
     background:var(--accent-soft);
     color:var(--accent-deep);
-    width:38px;height:38px;
+    width:34px;height:34px;
     border-radius:50%;
     font-size:20px;
     font-weight:700;
@@ -136,9 +141,9 @@
     position:relative;
     background:var(--card);
     border:2px solid var(--line);
-    border-radius:26px;
+    border-radius:20px;
     box-shadow:var(--shadow);
-    padding:14px 8px 10px;
+    padding:8px 3px 4px;
   }
   .cal::before,.cal::after{
     content:"";
@@ -147,13 +152,13 @@
     -webkit-mask:var(--flower) center/contain no-repeat;
     mask:var(--flower) center/contain no-repeat;
   }
-  .cal::before{top:-14px;left:-10px;background:var(--accent);transform:rotate(-15deg)}
-  .cal::after{top:-10px;right:-8px;width:26px;height:26px;background:#ffc1d2;transform:rotate(20deg)}
+  .cal::before{top:-12px;left:-6px;background:var(--accent);transform:rotate(-15deg)}
+  .cal::after{top:-9px;right:-4px;width:26px;height:26px;background:#ffc1d2;transform:rotate(20deg)}
   .cal-row{
     display:grid;
-    grid-template-columns:24px repeat(7,1fr);
-    gap:3px;
-    margin-bottom:3px;
+    grid-template-columns:18px repeat(7,1fr);
+    gap:2px;
+    margin-bottom:2px;
   }
   .cal-head div{
     text-align:center;
@@ -169,7 +174,7 @@
     border:none;
     background:linear-gradient(#e9f5e2,#d8eecd);
     color:#6a9a58;
-    border-radius:12px;
+    border-radius:9px;
     font-size:10px;
     font-weight:700;
     writing-mode:vertical-rl;
@@ -226,7 +231,7 @@
     font-size:11px;
     color:var(--ink-soft);
     text-align:center;
-    margin-top:10px;
+    margin-top:4px;
   }
 
   /* 週表示（ポラロイド風） */
@@ -234,10 +239,10 @@
     position:relative;
     background:var(--card);
     border:2px solid var(--line);
-    border-radius:22px;
+    border-radius:18px;
     box-shadow:var(--shadow);
-    padding:14px 14px 12px;
-    margin-bottom:12px;
+    padding:8px 10px 8px;
+    margin-bottom:6px;
     cursor:pointer;
   }
   .wday.today{border-color:var(--accent)}
@@ -248,8 +253,8 @@
     color:#fff;
     background:linear-gradient(135deg,#ffa3bd,var(--accent));
     border-radius:999px;
-    padding:2px 12px 2px 8px;
-    margin-bottom:10px;
+    padding:1px 12px 1px 8px;
+    margin-bottom:6px;
   }
   .wday .wd .ic{color:#fff}
   .wday.empty .wd{background:var(--accent-soft);color:var(--accent-deep)}
@@ -257,8 +262,8 @@
   .wday .ph{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:10px;
-    margin:0 2px 10px;
+    gap:8px;
+    margin:0 2px 8px;
   }
   .wday .ph img{
     width:100%;
@@ -283,19 +288,20 @@
   #map{
     position:relative;
     z-index:0;
-    height:calc(100dvh - 250px);
-    min-height:360px;
+    flex:1;
+    min-height:320px;
     border-radius:26px;
     border:3px solid #fff;
     box-shadow:var(--shadow),0 0 0 2px var(--line);
     overflow:hidden;
     background:var(--accent-soft);
   }
+  #view-map.on{display:flex;flex-direction:column;flex:1}
   .map-msg{
-    font-size:12px;
+    font-size:11px;
     color:var(--ink-soft);
     text-align:center;
-    margin-top:10px;
+    margin-top:4px;
   }
   /* 地図のピン：お花の真ん中に写真、下に茎と葉っぱ */
   .pin{position:relative;width:62px;height:78px}
@@ -345,7 +351,7 @@
     display:flex;
     gap:8px;
     justify-content:center;
-    margin-top:22px;
+    margin-top:12px;
   }
   .btn{
     appearance:none;
@@ -422,7 +428,7 @@
     max-height:92dvh;
     overflow-y:auto;
     border-radius:28px 28px 0 0;
-    padding:26px 18px calc(24px + env(safe-area-inset-bottom));
+    padding:22px calc(12px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
     animation:up .25s ease;
   }
   @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
@@ -771,6 +777,7 @@
 
   function switchTab(tab){
     currentTab = tab;
+    document.body.classList.toggle("tab-map", tab === "map");
     document.querySelectorAll(".tabs button").forEach(function(b){
       b.classList.toggle("on", b.dataset.tab === tab);
     });
