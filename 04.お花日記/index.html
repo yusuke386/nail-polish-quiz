@@ -3,19 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff5f8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="お花日記">
 <title>お花日記</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
   :root{
-    --bg:#f7f6ef;
+    --bg:#fff5f8;
     --card:#ffffff;
-    --ink:#3b3a33;
-    --ink-soft:#8b8a7c;
-    --line:#e7e4d8;
-    --accent:#7c8f5a;
-    --accent-soft:#e9efdd;
-    --pink:#c98a93;
-    --pink-soft:#f6e6e8;
-    --shadow:0 6px 24px rgba(80,80,50,.10);
+    --ink:#4a3a41;
+    --ink-soft:#9c8790;
+    --line:#f5dde5;
+    --accent:#e27d9b;
+    --accent-deep:#c85c7d;
+    --accent-soft:#fde8ef;
+    --shadow:0 6px 22px rgba(200,92,125,.13);
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -25,36 +28,253 @@
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
     line-height:1.6;
     -webkit-text-size-adjust:100%;
+    -webkit-tap-highlight-color:transparent;
   }
+  button{font-family:inherit}
   .wrap{
-    max-width:480px;
+    max-width:520px;
     margin:0 auto;
     min-height:100vh;
     min-height:100dvh;
-    padding:22px 16px calc(90px + env(safe-area-inset-bottom));
+    padding:calc(18px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));
   }
   .brand{
-    font-size:12px;
-    letter-spacing:.22em;
-    text-transform:uppercase;
-    color:var(--pink);
-    margin-bottom:6px;
+    font-size:11px;
+    letter-spacing:.24em;
+    color:var(--accent);
+    margin-bottom:2px;
   }
   h1{
     font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
     font-weight:600;
     font-size:22px;
-    letter-spacing:.04em;
-    margin:0 0 4px;
+    letter-spacing:.06em;
+    margin:0 0 14px;
   }
-  .lead{color:var(--ink-soft);font-size:13px;margin:0 0 18px}
 
-  /* トップバーの操作 */
-  .toolbar{
+  /* タブ */
+  .tabs{
+    display:flex;
+    background:var(--accent-soft);
+    border-radius:999px;
+    padding:4px;
+    margin-bottom:16px;
+  }
+  .tabs button{
+    flex:1;
+    appearance:none;
+    border:none;
+    background:none;
+    color:var(--accent-deep);
+    font-size:14px;
+    padding:8px 0;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .tabs button.on{
+    background:var(--card);
+    color:var(--ink);
+    font-weight:600;
+    box-shadow:0 2px 8px rgba(200,92,125,.15);
+  }
+  .view{display:none}
+  .view.on{display:block}
+
+  /* 期間ナビ */
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .nav .label{
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+    font-size:18px;
+    font-weight:600;
+  }
+  .nav button{
+    appearance:none;
+    border:1px solid var(--line);
+    background:var(--card);
+    color:var(--accent-deep);
+    width:36px;height:36px;
+    border-radius:50%;
+    font-size:18px;
+    cursor:pointer;
+  }
+
+  /* 月カレンダー */
+  .cal{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    padding:10px 8px 8px;
+  }
+  .cal-row{
+    display:grid;
+    grid-template-columns:26px repeat(7,1fr);
+    gap:3px;
+    margin-bottom:3px;
+  }
+  .cal-head div{
+    text-align:center;
+    font-size:11px;
+    color:var(--ink-soft);
+    padding-bottom:2px;
+  }
+  .cal-head .sun{color:#d4606f}
+  .cal-head .sat{color:#5f86c4}
+  .wk{
+    appearance:none;
+    border:none;
+    background:var(--accent-soft);
+    color:var(--accent-deep);
+    border-radius:8px;
+    font-size:10px;
+    writing-mode:vertical-rl;
+    letter-spacing:.1em;
+    cursor:pointer;
+    padding:0;
+  }
+  .day{
+    position:relative;
+    aspect-ratio:1/1.2;
+    border-radius:9px;
+    background:#fffafb;
+    border:1px solid transparent;
+    overflow:hidden;
+    cursor:pointer;
+    padding:0;
+    appearance:none;
+    text-align:left;
+  }
+  .day .n{
+    position:absolute;
+    top:2px;left:4px;
+    font-size:11px;
+    color:var(--ink);
+    z-index:2;
+  }
+  .day.has-photo .n{
+    color:#fff;
+    text-shadow:0 1px 3px rgba(0,0,0,.5);
+  }
+  .day img{
+    position:absolute;
+    inset:0;
+    width:100%;height:100%;
+    object-fit:cover;
+  }
+  .day .dot{
+    position:absolute;
+    left:50%;bottom:8px;
+    width:7px;height:7px;
+    margin-left:-3.5px;
+    border-radius:50%;
+    background:var(--accent);
+  }
+  .day.out{opacity:.35}
+  .day.today{border-color:var(--accent)}
+  .day.future{cursor:default}
+  .cal-note{
+    font-size:11px;
+    color:var(--ink-soft);
+    text-align:center;
+    margin-top:8px;
+  }
+
+  /* 週表示 */
+  .wday{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:12px 14px;
+    margin-bottom:10px;
+    cursor:pointer;
+  }
+  .wday.today{border-color:var(--accent)}
+  .wday .wd{
+    font-size:12px;
+    color:var(--accent-deep);
+    letter-spacing:.05em;
+    margin-bottom:6px;
+  }
+  .wday .ph{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+    margin-bottom:8px;
+  }
+  .wday .ph img{
+    width:100%;
+    aspect-ratio:1;
+    object-fit:cover;
+    border-radius:10px;
+    background:var(--accent-soft);
+  }
+  .wday .memo{
+    font-size:14px;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .wday .none{font-size:12px;color:var(--ink-soft)}
+
+  /* 地図 */
+  #map{
+    position:relative;
+    z-index:0;
+    height:calc(100dvh - 230px);
+    min-height:360px;
+    border-radius:18px;
+    border:1px solid var(--line);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    background:var(--accent-soft);
+  }
+  .map-msg{
+    font-size:12px;
+    color:var(--ink-soft);
+    text-align:center;
+    margin-top:8px;
+  }
+  .pin{
+    width:52px;height:52px;
+    border-radius:50%;
+    border:3px solid var(--accent);
+    background:#fff;
+    overflow:hidden;
+    box-shadow:0 3px 10px rgba(0,0,0,.25);
+    display:flex;align-items:center;justify-content:center;
+    font-size:24px;
+  }
+  .pin img{width:100%;height:100%;object-fit:cover;display:block}
+  .pin-wrap{position:relative}
+  .pin-wrap::after{
+    content:"";
+    position:absolute;
+    left:50%;bottom:-8px;
+    margin-left:-7px;
+    border:7px solid transparent;
+    border-top:9px solid var(--accent);
+    border-bottom:0;
+  }
+  .pop{min-width:170px;max-width:220px;font-family:inherit}
+  .pop .pd{font-size:12px;color:var(--accent-deep);margin-bottom:4px}
+  .pop .pm{font-size:13px;color:var(--ink);margin-bottom:8px;white-space:pre-wrap;word-break:break-word}
+  .pop button{
+    appearance:none;border:none;
+    background:var(--accent);color:#fff;
+    font-size:12px;padding:6px 12px;border-radius:999px;cursor:pointer;
+  }
+
+  /* 下部のバックアップ */
+  .backup{
     display:flex;
     gap:8px;
-    margin-bottom:18px;
-    flex-wrap:wrap;
+    justify-content:center;
+    margin-top:22px;
   }
   .btn{
     appearance:none;
@@ -62,125 +282,59 @@
     background:var(--card);
     color:var(--ink);
     font-size:12px;
-    padding:8px 12px;
+    padding:8px 14px;
     border-radius:999px;
     cursor:pointer;
   }
-  .btn:active{transform:scale(.97)}
   .btn.primary{
     background:var(--accent);
     border-color:var(--accent);
     color:#fff;
   }
+  .btn.danger{color:#c24c5c}
+  .btn:disabled{opacity:.6}
 
-  /* 一覧 */
-  .empty{
-    text-align:center;
-    color:var(--ink-soft);
-    font-size:13px;
-    padding:48px 12px;
-    border:1px dashed var(--line);
-    border-radius:16px;
-  }
-  .entry{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:18px;
-    box-shadow:var(--shadow);
-    padding:16px;
-    margin-bottom:14px;
-  }
-  .entry .date{
-    font-size:11px;
-    letter-spacing:.08em;
-    color:var(--pink);
-    margin-bottom:6px;
-  }
-  .entry .title{
-    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
-    font-size:17px;
-    font-weight:600;
-    margin-bottom:8px;
-  }
-  .entry .photos{
-    display:flex;
-    gap:8px;
-    overflow-x:auto;
-    margin-bottom:10px;
-    -webkit-overflow-scrolling:touch;
-  }
-  .entry .photos img{
-    width:104px;
-    height:104px;
-    object-fit:cover;
-    border-radius:12px;
-    flex:none;
-    background:var(--accent-soft);
-  }
-  .entry .memo{
-    font-size:14px;
-    white-space:pre-wrap;
-    color:var(--ink);
-    margin-bottom:10px;
-  }
-  .entry .row-actions{
-    display:flex;
-    gap:8px;
-    justify-content:flex-end;
-  }
-  .entry .row-actions button{
-    appearance:none;
-    background:none;
-    border:none;
-    color:var(--ink-soft);
-    font-size:12px;
-    cursor:pointer;
-    padding:4px 6px;
-  }
-  .entry .row-actions button.danger{color:#b25555}
-
-  /* フローティング追加ボタン */
   .fab{
     position:fixed;
     right:20px;
-    bottom:calc(20px + env(safe-area-inset-bottom));
-    width:56px;
-    height:56px;
+    bottom:calc(22px + env(safe-area-inset-bottom));
+    width:58px;height:58px;
     border-radius:50%;
-    background:var(--pink);
+    background:var(--accent);
     color:#fff;
     border:none;
-    font-size:28px;
-    box-shadow:0 8px 20px rgba(180,90,100,.35);
-    cursor:pointer;
+    font-size:30px;
     line-height:1;
+    box-shadow:0 8px 20px rgba(200,92,125,.4);
+    cursor:pointer;
+    z-index:40;
   }
-  .fab:active{transform:scale(.95)}
 
-  /* モーダル（入力フォーム） */
+  /* シート（記録・詳細） */
   .overlay{
     position:fixed;
     inset:0;
-    background:rgba(40,35,25,.4);
+    background:rgba(74,40,52,.38);
     display:none;
     align-items:flex-end;
     justify-content:center;
-    z-index:50;
+    z-index:1000;
   }
   .overlay.open{display:flex}
   .sheet{
     background:var(--bg);
     width:100%;
-    max-width:480px;
+    max-width:520px;
     max-height:92vh;
+    max-height:92dvh;
     overflow-y:auto;
-    border-radius:20px 20px 0 0;
+    border-radius:22px 22px 0 0;
     padding:20px 18px calc(24px + env(safe-area-inset-bottom));
   }
   .sheet h2{
     font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
     font-size:18px;
-    margin:0 0 14px;
+    margin:0 0 6px;
   }
   label{
     display:block;
@@ -188,63 +342,110 @@
     color:var(--ink-soft);
     margin:14px 0 6px;
   }
-  input[type="date"],
-  input[type="text"],
-  textarea{
+  input[type="date"],textarea{
     width:100%;
     border:1px solid var(--line);
     background:var(--card);
     border-radius:12px;
     padding:10px 12px;
-    font-size:14px;
+    font-size:16px;
     color:var(--ink);
     font-family:inherit;
   }
-  textarea{min-height:90px;resize:vertical}
-  .photo-input{
-    display:flex;
+  textarea{min-height:110px;resize:vertical}
+  .slots{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
     gap:8px;
-    flex-wrap:wrap;
-    margin-top:8px;
   }
-  .photo-input .thumb{
+  .slot{
     position:relative;
-    width:76px;
-    height:76px;
-  }
-  .photo-input .thumb img{
-    width:100%;height:100%;object-fit:cover;border-radius:10px;
-  }
-  .photo-input .thumb .rm{
-    position:absolute;top:-6px;right:-6px;
-    width:20px;height:20px;border-radius:50%;
-    background:#b25555;color:#fff;border:none;font-size:12px;
-    line-height:20px;text-align:center;padding:0;cursor:pointer;
-  }
-  .photo-add{
-    width:76px;height:76px;
-    border:1px dashed var(--line);
-    border-radius:10px;
-    display:flex;align-items:center;justify-content:center;
-    color:var(--ink-soft);
-    font-size:24px;
-    cursor:pointer;
+    aspect-ratio:1;
+    border-radius:12px;
+    overflow:hidden;
     background:var(--card);
+    border:1px dashed var(--accent);
+  }
+  .slot img{width:100%;height:100%;object-fit:cover;display:block}
+  .slot .rm{
+    position:absolute;top:4px;right:4px;
+    width:24px;height:24px;border-radius:50%;
+    background:rgba(0,0,0,.55);color:#fff;border:none;
+    font-size:13px;line-height:24px;padding:0;cursor:pointer;
+  }
+  .slot .loc{
+    position:absolute;left:4px;bottom:4px;
+    font-size:10px;
+    background:rgba(255,255,255,.88);
+    color:var(--accent-deep);
+    border-radius:999px;
+    padding:1px 6px;
+  }
+  .slot.add{
+    display:flex;align-items:center;justify-content:center;
+    color:var(--accent);font-size:28px;cursor:pointer;
+    appearance:none;
+  }
+  .geo{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:8px;
   }
   .sheet .actions{
     display:flex;
     gap:10px;
     margin-top:20px;
   }
-  .sheet .actions button{flex:1}
-  .sheet .actions .btn{padding:11px 12px;font-size:14px}
+  .sheet .actions .btn{flex:1;padding:12px;font-size:14px}
 
-  .foot{margin-top:10px;text-align:center;font-size:11px;color:var(--ink-soft);letter-spacing:.03em}
+  .d-photos{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    margin:10px 0;
+    -webkit-overflow-scrolling:touch;
+  }
+  .d-photos img{
+    height:190px;
+    max-width:80%;
+    object-fit:cover;
+    border-radius:14px;
+    flex:none;
+    cursor:zoom-in;
+  }
+  .d-memo{
+    font-size:15px;
+    white-space:pre-wrap;
+    word-break:break-word;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:12px 14px;
+  }
+  .d-memo.empty{color:var(--ink-soft);font-size:13px}
+  .d-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:16px;
+  }
+  .d-actions .btn{flex:1 1 auto;padding:10px}
+
+  .lightbox{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.9);
+    display:none;
+    align-items:center;justify-content:center;
+    z-index:1100;
+  }
+  .lightbox.open{display:flex}
+  .lightbox img{max-width:100%;max-height:100%;object-fit:contain}
+
   .toast{
     position:fixed;
-    left:50%;top:18px;
+    left:50%;top:calc(16px + env(safe-area-inset-top));
     transform:translateX(-50%);
-    background:#3b3a33;
+    background:var(--ink);
     color:#fff;
     font-size:12px;
     padding:8px 16px;
@@ -252,326 +453,690 @@
     opacity:0;
     pointer-events:none;
     transition:opacity .25s;
-    z-index:100;
+    z-index:1200;
+    white-space:nowrap;
   }
-  .toast.show{opacity:.92}
+  .toast.show{opacity:.94}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="brand">FLOWER DIARY</div>
   <h1>お花日記</h1>
-  <p class="lead">見つけたお花や飾ったお花を記録します</p>
 
-  <div class="toolbar">
-    <button class="btn" id="btnExport">書き出し（バックアップ）</button>
-    <button class="btn" id="btnImport">読み込み</button>
-    <input type="file" id="fileImport" accept="application/json" style="display:none">
+  <div class="tabs" role="tablist">
+    <button data-tab="month" class="on">月</button>
+    <button data-tab="week">週</button>
+    <button data-tab="map">地図</button>
   </div>
 
-  <div id="list"></div>
+  <section class="view on" id="view-month">
+    <div class="nav">
+      <button id="mPrev" aria-label="前の月">‹</button>
+      <div class="label" id="mLabel"></div>
+      <button id="mNext" aria-label="次の月">›</button>
+    </div>
+    <div class="cal" id="cal"></div>
+    <div class="cal-note">左の「週」をタップすると、その週の写真がすべて見られます</div>
+
+    <div class="backup">
+      <button class="btn" id="btnExport">バックアップを保存</button>
+      <button class="btn" id="btnImport">バックアップを読み込む</button>
+      <input type="file" id="fileImport" accept="application/json,.json" hidden>
+    </div>
+  </section>
+
+  <section class="view" id="view-week">
+    <div class="nav">
+      <button id="wPrev" aria-label="前の週">‹</button>
+      <div class="label" id="wLabel"></div>
+      <button id="wNext" aria-label="次の週">›</button>
+    </div>
+    <div id="weekList"></div>
+  </section>
+
+  <section class="view" id="view-map">
+    <div id="map"></div>
+    <div class="map-msg" id="mapMsg"></div>
+  </section>
 </div>
 
-<button class="fab" id="btnAdd" aria-label="記録を追加">＋</button>
+<button class="fab" id="btnAdd" aria-label="今日の記録">＋</button>
 
-<div class="overlay" id="overlay">
+<!-- 記録フォーム -->
+<div class="overlay" id="formSheet">
   <div class="sheet">
-    <h2 id="sheetTitle">お花を記録する</h2>
-    <input type="hidden" id="editId">
+    <h2 id="formTitle">お花を記録する</h2>
 
     <label for="fDate">日付</label>
     <input type="date" id="fDate">
 
-    <label for="fTitle">お花の名前・タイトル</label>
-    <input type="text" id="fTitle" placeholder="例）チューリップ、いただいた花束 など">
-
-    <label>写真</label>
-    <div class="photo-input" id="photoList"></div>
-    <div class="photo-add" id="photoAdd">＋</div>
-    <input type="file" id="fPhoto" accept="image/*" capture="environment" multiple style="display:none">
+    <label>写真（3枚まで）</label>
+    <div class="slots" id="slots"></div>
+    <input type="file" id="fPhoto" accept="image/*" multiple hidden>
+    <div class="geo" id="geoStatus"></div>
 
     <label for="fMemo">メモ</label>
-    <textarea id="fMemo" placeholder="色や香り、感じたことなど自由に"></textarea>
+    <textarea id="fMemo" placeholder="見つけた場所、色や香り、感じたことなど"></textarea>
 
     <div class="actions">
-      <button class="btn" id="btnCancel">キャンセル</button>
+      <button class="btn" id="btnCancel">やめる</button>
       <button class="btn primary" id="btnSave">保存する</button>
     </div>
   </div>
 </div>
 
+<!-- 詳細 -->
+<div class="overlay" id="detailSheet">
+  <div class="sheet">
+    <h2 id="dDate"></h2>
+    <div class="d-photos" id="dPhotos"></div>
+    <div class="d-memo" id="dMemo"></div>
+    <div class="d-actions">
+      <button class="btn" id="dMap">地図で見る</button>
+      <button class="btn" id="dEdit">編集</button>
+      <button class="btn danger" id="dDelete">削除</button>
+      <button class="btn" id="dClose">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox"><img alt=""></div>
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 (function(){
   "use strict";
-  var STORAGE_KEY = "flowerDiaryEntries.v1";
-  var MAX_DIM = 1000;      // 保存前に長辺をこのサイズまで縮小
-  var JPEG_QUALITY = 0.72;
 
-  var listEl = document.getElementById("list");
-  var overlay = document.getElementById("overlay");
-  var photoListEl = document.getElementById("photoList");
-  var toastEl = document.getElementById("toast");
+  var DB_NAME = "flowerDiary";
+  var STORE = "entries";
+  var MAX_PHOTOS = 3;
+  var FULL_DIM = 1400;    // 保存する写真の長辺
+  var THUMB_DIM = 240;    // カレンダー・地図ピン用の正方形サムネイル
+  var WEEKDAYS = ["日","月","火","水","木","金","土"];
 
-  var currentPhotos = []; // 編集中の写真（base64配列）
-  var editId = null;
+  var $ = function(id){ return document.getElementById(id); };
+  var db = null;
+  var entries = new Map();   // "YYYY-MM-DD" -> entry
+  var urls = new Map();      // Blob -> object URL
+  var currentTab = "month";
+  var viewMonth = startOfMonth(new Date());
+  var viewWeek = startOfWeek(new Date());
+  var detailDate = null;
+  var form = null;
 
-  function load(){
-    try{
-      var raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    }catch(e){
-      console.error("読み込みに失敗しました", e);
-      return [];
-    }
+  // ---------- 日付 ----------
+  function pad(n){ return (n < 10 ? "0" : "") + n; }
+  function iso(d){ return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()); }
+  function parseIso(s){ var p = s.split("-").map(Number); return new Date(p[0], p[1]-1, p[2]); }
+  function todayIso(){ return iso(new Date()); }
+  function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function startOfWeek(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay()); }
+  function addDays(d, n){ return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function fmtLong(s){
+    var d = parseIso(s);
+    return d.getFullYear() + "年" + (d.getMonth()+1) + "月" + d.getDate() + "日（" + WEEKDAYS[d.getDay()] + "）";
   }
-  function save(entries){
-    try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-      return true;
-    }catch(e){
-      console.error("保存に失敗しました", e);
-      toast("保存に失敗しました。写真の枚数を減らしてお試しください。");
-      return false;
-    }
+
+  // ---------- 保存（IndexedDB） ----------
+  function openDB(){
+    return new Promise(function(resolve, reject){
+      var req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = function(){ req.result.createObjectStore(STORE, { keyPath: "date" }); };
+      req.onsuccess = function(){ resolve(req.result); };
+      req.onerror = function(){ reject(req.error); };
+    });
+  }
+  function run(mode, fn){
+    return new Promise(function(resolve, reject){
+      var t = db.transaction(STORE, mode);
+      var req = fn(t.objectStore(STORE));
+      t.oncomplete = function(){ resolve(req ? req.result : undefined); };
+      t.onerror = function(){ reject(t.error); };
+      t.onabort = function(){ reject(t.error); };
+    });
+  }
+  function dbAll(){ return run("readonly", function(s){ return s.getAll(); }); }
+  function dbPut(e){ return run("readwrite", function(s){ return s.put(e); }); }
+  function dbDelete(date){ return run("readwrite", function(s){ return s.delete(date); }); }
+
+  function urlOf(blob){
+    if(!urls.has(blob)) urls.set(blob, URL.createObjectURL(blob));
+    return urls.get(blob);
   }
 
+  // ---------- 表示の共通部品 ----------
   function toast(msg){
-    toastEl.textContent = msg;
-    toastEl.classList.add("show");
-    clearTimeout(toast._t);
-    toast._t = setTimeout(function(){ toastEl.classList.remove("show"); }, 2200);
+    var el = $("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toast.t);
+    toast.t = setTimeout(function(){ el.classList.remove("show"); }, 2400);
   }
-
-  function escapeHtml(s){
-    return String(s || "").replace(/[&<>"']/g, function(c){
-      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
     });
   }
+  function openOverlay(id){ $(id).classList.add("open"); }
+  function closeOverlay(id){ $(id).classList.remove("open"); }
 
-  function fmtDate(iso){
-    if(!iso) return "";
-    var d = new Date(iso + "T00:00:00");
-    if(isNaN(d.getTime())) return iso;
-    var w = ["日","月","火","水","木","金","土"][d.getDay()];
-    return d.getFullYear() + "年" + (d.getMonth()+1) + "月" + d.getDate() + "日（" + w + "）";
+  function renderAll(){
+    renderMonth();
+    renderWeek();
+    if(currentTab === "map") renderMap();
   }
 
-  function render(){
-    var entries = load().slice().sort(function(a,b){
-      return (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0);
+  function switchTab(tab){
+    currentTab = tab;
+    document.querySelectorAll(".tabs button").forEach(function(b){
+      b.classList.toggle("on", b.dataset.tab === tab);
     });
-    if(entries.length === 0){
-      listEl.innerHTML = '<div class="empty">まだ記録がありません<br>右下の＋から追加してください</div>';
+    ["month","week","map"].forEach(function(t){
+      $("view-" + t).classList.toggle("on", t === tab);
+    });
+    if(tab === "map") renderMap();
+  }
+
+  // ---------- 月カレンダー ----------
+  function renderMonth(){
+    var y = viewMonth.getFullYear(), m = viewMonth.getMonth();
+    var last = new Date(y, m + 1, 0);
+    var today = todayIso();
+    $("mLabel").textContent = y + "年" + (m + 1) + "月";
+
+    var html = '<div class="cal-row cal-head"><div></div>' + WEEKDAYS.map(function(w, i){
+      return '<div class="' + (i === 0 ? "sun" : i === 6 ? "sat" : "") + '">' + w + "</div>";
+    }).join("") + "</div>";
+
+    for(var ws = startOfWeek(viewMonth); ws <= last; ws = addDays(ws, 7)){
+      html += '<div class="cal-row"><button class="wk" data-week="' + iso(ws) + '">週</button>';
+      for(var i = 0; i < 7; i++){
+        var d = addDays(ws, i), key = iso(d), e = entries.get(key);
+        var cls = ["day"];
+        if(d.getMonth() !== m) cls.push("out");
+        if(key === today) cls.push("today");
+        if(key > today) cls.push("future");
+        var inner = '<span class="n">' + d.getDate() + "</span>";
+        if(e && e.photos.length){
+          cls.push("has-photo");
+          inner += '<img src="' + urlOf(e.photos[0].thumb) + '" alt="">';
+        }else if(e){
+          inner += '<span class="dot"></span>';
+        }
+        html += '<button class="' + cls.join(" ") + '" data-date="' + key + '">' + inner + "</button>";
+      }
+      html += "</div>";
+    }
+    $("cal").innerHTML = html;
+  }
+
+  $("cal").addEventListener("click", function(ev){
+    var wk = ev.target.closest(".wk");
+    if(wk){
+      viewWeek = parseIso(wk.dataset.week);
+      renderWeek();
+      switchTab("week");
       return;
     }
-    listEl.innerHTML = entries.map(function(e){
-      var photos = (e.photos||[]).map(function(p){
-        return '<img src="'+p+'" alt="">';
-      }).join("");
-      return (
-        '<div class="entry" data-id="'+e.id+'">' +
-          '<div class="date">'+escapeHtml(fmtDate(e.date))+'</div>' +
-          (e.title ? '<div class="title">'+escapeHtml(e.title)+'</div>' : '') +
-          (photos ? '<div class="photos">'+photos+'</div>' : '') +
-          (e.memo ? '<div class="memo">'+escapeHtml(e.memo)+'</div>' : '') +
-          '<div class="row-actions">' +
-            '<button data-act="edit">編集</button>' +
-            '<button data-act="del" class="danger">削除</button>' +
-          '</div>' +
-        '</div>'
-      );
-    }).join("");
-  }
-
-  function todayIso(){
-    var d = new Date();
-    var m = String(d.getMonth()+1).padStart(2,"0");
-    var day = String(d.getDate()).padStart(2,"0");
-    return d.getFullYear()+"-"+m+"-"+day;
-  }
-
-  function openSheet(entry){
-    editId = entry ? entry.id : null;
-    document.getElementById("sheetTitle").textContent = entry ? "記録を編集" : "お花を記録する";
-    document.getElementById("fDate").value = entry ? entry.date : todayIso();
-    document.getElementById("fTitle").value = entry ? (entry.title||"") : "";
-    document.getElementById("fMemo").value = entry ? (entry.memo||"") : "";
-    currentPhotos = entry && entry.photos ? entry.photos.slice() : [];
-    renderPhotoInputs();
-    overlay.classList.add("open");
-  }
-  function closeSheet(){
-    overlay.classList.remove("open");
-    currentPhotos = [];
-    editId = null;
-  }
-
-  function renderPhotoInputs(){
-    photoListEl.innerHTML = currentPhotos.map(function(p, i){
-      return (
-        '<div class="thumb">' +
-          '<img src="'+p+'" alt="">' +
-          '<button class="rm" data-i="'+i+'" aria-label="削除">×</button>' +
-        '</div>'
-      );
-    }).join("");
-  }
-
-  photoListEl.addEventListener("click", function(ev){
-    var btn = ev.target.closest(".rm");
-    if(!btn) return;
-    var i = parseInt(btn.dataset.i, 10);
-    currentPhotos.splice(i, 1);
-    renderPhotoInputs();
+    var day = ev.target.closest(".day");
+    if(day) openDay(day.dataset.date);
   });
+  $("mPrev").addEventListener("click", function(){ viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1); renderMonth(); });
+  $("mNext").addEventListener("click", function(){ viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1); renderMonth(); });
 
-  document.getElementById("photoAdd").addEventListener("click", function(){
-    document.getElementById("fPhoto").click();
-  });
-
-  function resizeImage(file){
-    return new Promise(function(resolve, reject){
-      var reader = new FileReader();
-      reader.onload = function(e){
-        var img = new Image();
-        img.onload = function(){
-          var w = img.width, h = img.height;
-          if(w > MAX_DIM || h > MAX_DIM){
-            if(w >= h){ h = Math.round(h * MAX_DIM / w); w = MAX_DIM; }
-            else { w = Math.round(w * MAX_DIM / h); h = MAX_DIM; }
-          }
-          var canvas = document.createElement("canvas");
-          canvas.width = w; canvas.height = h;
-          var ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL("image/jpeg", JPEG_QUALITY));
-        };
-        img.onerror = reject;
-        img.src = e.target.result;
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  // 記録がある日は詳細、ない日（今日まで）は新規記録
+  function openDay(date){
+    if(entries.has(date)) openDetail(date);
+    else if(date <= todayIso()) openForm(date);
   }
 
-  document.getElementById("fPhoto").addEventListener("change", function(ev){
-    var files = Array.prototype.slice.call(ev.target.files || []);
-    if(files.length === 0) return;
-    Promise.all(files.map(resizeImage)).then(function(dataUrls){
-      currentPhotos = currentPhotos.concat(dataUrls);
-      renderPhotoInputs();
-    }).catch(function(){
-      toast("写真の読み込みに失敗しました");
-    });
-    ev.target.value = "";
-  });
-
-  document.getElementById("btnAdd").addEventListener("click", function(){ openSheet(null); });
-  document.getElementById("btnCancel").addEventListener("click", closeSheet);
-  overlay.addEventListener("click", function(ev){
-    if(ev.target === overlay) closeSheet();
-  });
-
-  document.getElementById("btnSave").addEventListener("click", function(){
-    var date = document.getElementById("fDate").value || todayIso();
-    var title = document.getElementById("fTitle").value.trim();
-    var memo = document.getElementById("fMemo").value.trim();
-
-    var entries = load();
-    if(editId){
-      var idx = entries.findIndex(function(e){ return e.id === editId; });
-      if(idx >= 0){
-        entries[idx].date = date;
-        entries[idx].title = title;
-        entries[idx].memo = memo;
-        entries[idx].photos = currentPhotos;
+  // ---------- 週表示 ----------
+  function renderWeek(){
+    var end = addDays(viewWeek, 6);
+    $("wLabel").textContent = (viewWeek.getMonth()+1) + "/" + viewWeek.getDate() + " 〜 " + (end.getMonth()+1) + "/" + end.getDate();
+    var today = todayIso();
+    var html = "";
+    for(var i = 0; i < 7; i++){
+      var d = addDays(viewWeek, i), key = iso(d), e = entries.get(key);
+      html += '<div class="wday' + (key === today ? " today" : "") + '" data-date="' + key + '">';
+      html += '<div class="wd">' + (d.getMonth()+1) + "月" + d.getDate() + "日（" + WEEKDAYS[d.getDay()] + "）</div>";
+      if(e){
+        if(e.photos.length){
+          html += '<div class="ph">' + e.photos.map(function(p){
+            return '<img src="' + urlOf(p.full) + '" alt="">';
+          }).join("") + "</div>";
+        }
+        if(e.memo) html += '<div class="memo">' + esc(e.memo) + "</div>";
+      }else{
+        html += '<div class="none">' + (key <= today ? "記録なし（タップして記録）" : "—") + "</div>";
       }
-    } else {
-      entries.push({
-        id: (Date.now().toString(36) + Math.random().toString(36).slice(2,8)),
-        date: date,
-        title: title,
-        memo: memo,
-        photos: currentPhotos,
-        createdAt: Date.now()
+      html += "</div>";
+    }
+    $("weekList").innerHTML = html;
+  }
+
+  $("weekList").addEventListener("click", function(ev){
+    var card = ev.target.closest(".wday");
+    if(card) openDay(card.dataset.date);
+  });
+  $("wPrev").addEventListener("click", function(){ viewWeek = addDays(viewWeek, -7); renderWeek(); });
+  $("wNext").addEventListener("click", function(){ viewWeek = addDays(viewWeek, 7); renderWeek(); });
+
+  // ---------- 地図 ----------
+  var map = null, markerLayer = null;
+
+  function renderMap(focus){
+    if(typeof L === "undefined"){
+      $("mapMsg").textContent = "地図を読み込めませんでした。インターネットに接続してから開き直してください。";
+      return;
+    }
+    if(!map){
+      map = L.map("map");
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+      markerLayer = L.layerGroup().addTo(map);
+    }
+    markerLayer.clearLayers();
+    var points = [];
+    Array.from(entries.values()).sort(function(a, b){ return a.date < b.date ? -1 : 1; }).forEach(function(e){
+      var located = e.photos.filter(function(p){ return p.lat != null; });
+      located.forEach(function(p){ addPin(e, [p.lat, p.lng], '<img src="' + urlOf(p.thumb) + '" alt="">', points); });
+      if(!located.length && e.lat != null) addPin(e, [e.lat, e.lng], "🌸", points);
+    });
+
+    $("mapMsg").textContent = points.length
+      ? "ピンをタップすると、その日の記録が見られます"
+      : "撮影場所のある記録がまだありません";
+
+    map.invalidateSize();
+    if(focus) map.setView(focus, 16);
+    else if(points.length) map.fitBounds(points, { padding: [40, 40], maxZoom: 16 });
+    else map.setView([36.2, 138.25], 5);
+  }
+
+  function addPin(e, latlng, inner, points){
+    var icon = L.divIcon({
+      className: "",
+      html: '<div class="pin-wrap"><div class="pin">' + inner + "</div></div>",
+      iconSize: [52, 60],
+      iconAnchor: [26, 60],
+      popupAnchor: [0, -58]
+    });
+    var box = document.createElement("div");
+    box.className = "pop";
+    box.innerHTML =
+      '<div class="pd">' + esc(fmtLong(e.date)) + "</div>" +
+      (e.memo ? '<div class="pm">' + esc(e.memo.length > 60 ? e.memo.slice(0, 60) + "…" : e.memo) + "</div>" : "") +
+      "<button>この日の記録を見る</button>";
+    box.querySelector("button").addEventListener("click", function(){ openDetail(e.date); });
+    L.marker(latlng, { icon: icon }).bindPopup(box).addTo(markerLayer);
+    points.push(latlng);
+  }
+
+  function firstLocation(e){
+    for(var i = 0; i < e.photos.length; i++){
+      if(e.photos[i].lat != null) return [e.photos[i].lat, e.photos[i].lng];
+    }
+    return e.lat != null ? [e.lat, e.lng] : null;
+  }
+
+  // ---------- 詳細 ----------
+  function openDetail(date){
+    var e = entries.get(date);
+    if(!e) return;
+    detailDate = date;
+    $("dDate").textContent = fmtLong(date);
+    $("dPhotos").innerHTML = e.photos.map(function(p){
+      return '<img src="' + urlOf(p.full) + '" alt="">';
+    }).join("");
+    $("dPhotos").style.display = e.photos.length ? "" : "none";
+    $("dMemo").textContent = e.memo || "メモはありません";
+    $("dMemo").classList.toggle("empty", !e.memo);
+    $("dMap").style.display = firstLocation(e) ? "" : "none";
+    openOverlay("detailSheet");
+  }
+
+  $("dPhotos").addEventListener("click", function(ev){
+    if(ev.target.tagName !== "IMG") return;
+    $("lightbox").querySelector("img").src = ev.target.src;
+    openOverlay("lightbox");
+  });
+  $("lightbox").addEventListener("click", function(){ closeOverlay("lightbox"); });
+  $("dClose").addEventListener("click", function(){ closeOverlay("detailSheet"); });
+  $("detailSheet").addEventListener("click", function(ev){ if(ev.target.id === "detailSheet") closeOverlay("detailSheet"); });
+  $("dEdit").addEventListener("click", function(){ closeOverlay("detailSheet"); openForm(detailDate); });
+  $("dMap").addEventListener("click", function(){
+    var loc = firstLocation(entries.get(detailDate));
+    closeOverlay("detailSheet");
+    switchTab("map");
+    if(loc && map) renderMap(loc);
+  });
+  $("dDelete").addEventListener("click", function(){
+    if(!confirm(fmtLong(detailDate) + " の記録を削除しますか？")) return;
+    dbDelete(detailDate).then(function(){
+      entries.delete(detailDate);
+      closeOverlay("detailSheet");
+      renderAll();
+      toast("削除しました");
+    }).catch(function(){ toast("削除できませんでした"); });
+  });
+
+  // ---------- 記録フォーム ----------
+  function getHere(){
+    return new Promise(function(resolve){
+      if(!navigator.geolocation) return resolve(null);
+      navigator.geolocation.getCurrentPosition(
+        function(p){ resolve({ lat: p.coords.latitude, lng: p.coords.longitude }); },
+        function(){ resolve(null); },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      );
+    });
+  }
+
+  function openForm(date){
+    var e = entries.get(date);
+    form = {
+      original: e ? date : null,
+      photos: e ? e.photos.slice() : [],
+      here: null,
+      hereDone: false,
+      herePromise: null
+    };
+    $("formTitle").textContent = e ? "記録を編集" : "お花を記録する";
+    $("fDate").value = date;
+    $("fMemo").value = e ? e.memo : "";
+    renderSlots();
+    updateGeo();
+    openOverlay("formSheet");
+  }
+
+  // 今日の記録のときだけ現在地を取りにいく（過去の日に自宅の位置が入らないように）
+  function updateGeo(){
+    var el = $("geoStatus");
+    var hasExif = form.photos.some(function(p){ return p.loc === "photo"; });
+    if($("fDate").value !== todayIso()){
+      el.textContent = hasExif ? "📍 写真の撮影場所を記録します" : "過去の日付では、写真に位置情報がある場合のみ撮影場所を記録します";
+      return;
+    }
+    if(!form.herePromise){
+      var f = form;
+      f.herePromise = getHere().then(function(here){
+        f.here = here;
+        f.hereDone = true;
+        if(form === f) updateGeo();
+        return here;
       });
     }
-    if(save(entries)){
-      closeSheet();
-      render();
-      toast("保存しました");
-    }
-  });
+    if(!form.hereDone) el.textContent = "📍 現在地を確認しています…";
+    else if(form.here) el.textContent = "📍 撮影場所を記録します（写真に位置情報がない場合は現在地）";
+    else el.textContent = hasExif ? "📍 写真の撮影場所を記録します" : "現在地を取得できませんでした（位置情報の許可を確認してください）";
+  }
+  $("fDate").addEventListener("change", updateGeo);
 
-  listEl.addEventListener("click", function(ev){
-    var btn = ev.target.closest("button[data-act]");
-    if(!btn) return;
-    var card = ev.target.closest(".entry");
-    var id = card.dataset.id;
-    var entries = load();
-    if(btn.dataset.act === "edit"){
-      var entry = entries.find(function(e){ return e.id === id; });
-      if(entry) openSheet(entry);
-    } else if(btn.dataset.act === "del"){
-      if(confirm("この記録を削除しますか？")){
-        entries = entries.filter(function(e){ return e.id !== id; });
-        save(entries);
-        render();
-        toast("削除しました");
-      }
-    }
-  });
+  function renderSlots(){
+    var html = form.photos.map(function(p, i){
+      var badge = p.loc === "photo" ? "📍写真" : p.loc === "here" ? "📍現在地" : "";
+      return '<div class="slot"><img src="' + urlOf(p.thumb) + '" alt="">' +
+        '<button class="rm" data-i="' + i + '" aria-label="写真を外す">×</button>' +
+        (badge ? '<span class="loc">' + badge + "</span>" : "") + "</div>";
+    }).join("");
+    if(form.photos.length < MAX_PHOTOS) html += '<button class="slot add" id="slotAdd" aria-label="写真を追加">＋</button>';
+    $("slots").innerHTML = html;
+  }
 
-  // バックアップ（書き出し・読み込み）
-  document.getElementById("btnExport").addEventListener("click", function(){
-    var entries = load();
-    if(entries.length === 0){
-      toast("記録がありません");
+  $("slots").addEventListener("click", function(ev){
+    var rm = ev.target.closest(".rm");
+    if(rm){
+      form.photos.splice(Number(rm.dataset.i), 1);
+      renderSlots();
+      updateGeo();
       return;
     }
-    var blob = new Blob([JSON.stringify(entries, null, 2)], {type:"application/json"});
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    var stamp = todayIso();
-    a.href = url;
-    a.download = "flower-diary-" + stamp + ".json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    if(ev.target.closest("#slotAdd")) $("fPhoto").click();
   });
 
-  document.getElementById("btnImport").addEventListener("click", function(){
-    document.getElementById("fileImport").click();
-  });
-  document.getElementById("fileImport").addEventListener("change", function(ev){
-    var file = ev.target.files && ev.target.files[0];
-    if(!file) return;
-    var reader = new FileReader();
-    reader.onload = function(e){
-      try{
-        var imported = JSON.parse(e.target.result);
-        if(!Array.isArray(imported)) throw new Error("形式が不正です");
-        var existing = load();
-        var existingIds = new Set(existing.map(function(x){ return x.id; }));
-        var merged = existing.concat(imported.filter(function(x){
-          return x && x.id && !existingIds.has(x.id);
-        }));
-        save(merged);
-        render();
-        toast("読み込みました（" + (merged.length - existing.length) + "件追加）");
-      }catch(err){
-        console.error(err);
-        toast("読み込みに失敗しました。ファイルを確認してください。");
-      }
-    };
-    reader.readAsText(file);
+  $("fPhoto").addEventListener("change", function(ev){
+    var files = Array.from(ev.target.files || []);
     ev.target.value = "";
+    var room = MAX_PHOTOS - form.photos.length;
+    if(files.length > room) toast("写真は1日" + MAX_PHOTOS + "枚までです");
+    var f = form;
+    Promise.all(files.slice(0, room).map(preparePhoto)).then(function(list){
+      if(form !== f) return;
+      f.photos = f.photos.concat(list);
+      renderSlots();
+      updateGeo();
+    }).catch(function(){ toast("写真を読み込めませんでした"); });
   });
 
-  render();
+  function preparePhoto(file){
+    return Promise.all([readGps(file), loadImage(file)]).then(function(r){
+      var gps = r[0], img = r[1];
+      return Promise.all([resize(img, FULL_DIM, false), resize(img, THUMB_DIM, true)]).then(function(b){
+        return {
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+          full: b[0],
+          thumb: b[1],
+          lat: gps ? gps.lat : null,
+          lng: gps ? gps.lng : null,
+          loc: gps ? "photo" : null
+        };
+      });
+    });
+  }
+
+  function loadImage(file){
+    return new Promise(function(resolve, reject){
+      var u = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function(){ URL.revokeObjectURL(u); resolve(img); };
+      img.onerror = function(){ URL.revokeObjectURL(u); reject(new Error("image")); };
+      img.src = u;
+    });
+  }
+
+  function resize(img, dim, square){
+    var w = img.naturalWidth, h = img.naturalHeight;
+    var sx = 0, sy = 0, sw = w, sh = h, cw, ch;
+    if(square){
+      var side = Math.min(w, h);
+      sx = (w - side) / 2; sy = (h - side) / 2; sw = sh = side;
+      cw = ch = Math.min(dim, side);
+    }else{
+      var s = Math.min(1, dim / Math.max(w, h));
+      cw = Math.round(w * s); ch = Math.round(h * s);
+    }
+    var c = document.createElement("canvas");
+    c.width = cw; c.height = ch;
+    c.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
+    return new Promise(function(resolve, reject){
+      c.toBlob(function(b){ b ? resolve(b) : reject(new Error("blob")); }, "image/jpeg", square ? 0.8 : 0.78);
+    });
+  }
+
+  // JPEGのEXIFからGPS座標を読む（縮小するとEXIFが消えるので元ファイルから読む）
+  function readGps(file){
+    return file.slice(0, 256 * 1024).arrayBuffer().then(function(buf){
+      var v = new DataView(buf);
+      if(v.getUint16(0) !== 0xFFD8) return null;
+      var off = 2;
+      while(off + 4 <= v.byteLength){
+        var marker = v.getUint16(off);
+        if((marker & 0xFF00) !== 0xFF00 || marker === 0xFFDA) return null;
+        if(marker === 0xFFE1 && v.getUint32(off + 4) === 0x45786966) return parseGps(v, off + 10);
+        off += 2 + v.getUint16(off + 2);
+      }
+      return null;
+    }).catch(function(){ return null; });
+  }
+
+  function parseGps(v, t){
+    var le = v.getUint16(t) === 0x4949;
+    var u16 = function(o){ return v.getUint16(t + o, le); };
+    var u32 = function(o){ return v.getUint32(t + o, le); };
+    var ifd = u32(4), n = u16(ifd), gps = 0;
+    for(var i = 0; i < n; i++){
+      var e = ifd + 2 + i * 12;
+      if(u16(e) === 0x8825){ gps = u32(e + 8); break; }
+    }
+    if(!gps) return null;
+    var tags = {}, gn = u16(gps);
+    for(var j = 0; j < gn; j++){
+      var g = gps + 2 + j * 12, tag = u16(g), type = u16(g + 2), count = u32(g + 4);
+      if((tag === 1 || tag === 3) && type === 2){
+        tags[tag] = String.fromCharCode(v.getUint8(t + g + 8));
+      }else if((tag === 2 || tag === 4) && type === 5 && count === 3){
+        var p = u32(g + 8);
+        var r = function(k){ return u32(p + k * 8) / u32(p + k * 8 + 4); };
+        tags[tag] = r(0) + r(1) / 60 + r(2) / 3600;
+      }
+    }
+    var lat = tags[2], lng = tags[4];
+    if(!isFinite(lat) || !isFinite(lng) || (lat === 0 && lng === 0)) return null;
+    if(tags[1] === "S") lat = -lat;
+    if(tags[3] === "W") lng = -lng;
+    return { lat: lat, lng: lng };
+  }
+
+  $("btnAdd").addEventListener("click", function(){ openForm(todayIso()); });
+  $("btnCancel").addEventListener("click", function(){ closeOverlay("formSheet"); form = null; });
+
+  $("btnSave").addEventListener("click", function(){
+    var btn = this;
+    var f = form;
+    var date = $("fDate").value;
+    var memo = $("fMemo").value.trim();
+    if(!date){ toast("日付を選んでください"); return; }
+    if(date > todayIso()){ toast("未来の日付には記録できません"); return; }
+    if(!memo && !f.photos.length){ toast("写真かメモを入れてください"); return; }
+    if(date !== f.original && entries.has(date) &&
+       !confirm(fmtLong(date) + " にはすでに記録があります。上書きしますか？")) return;
+
+    var isToday = date === todayIso();
+    btn.disabled = true;
+    btn.textContent = "保存中…";
+    var wait = isToday && f.herePromise ? f.herePromise : Promise.resolve(null);
+    wait.then(function(here){
+      var prev = f.original ? entries.get(f.original) : null;
+      var photos = f.photos.map(function(p){
+        if(p.lat == null && isToday && here) return Object.assign({}, p, { lat: here.lat, lng: here.lng, loc: "here" });
+        return p;
+      });
+      var entry = {
+        date: date,
+        memo: memo,
+        photos: photos,
+        lat: prev && prev.lat != null ? prev.lat : (isToday && here ? here.lat : null),
+        lng: prev && prev.lng != null ? prev.lng : (isToday && here ? here.lng : null),
+        createdAt: prev ? prev.createdAt : Date.now(),
+        updatedAt: Date.now()
+      };
+      return dbPut(entry).then(function(){
+        if(f.original && f.original !== date) return dbDelete(f.original);
+      }).then(function(){
+        if(f.original) entries.delete(f.original);
+        entries.set(date, entry);
+        closeOverlay("formSheet");
+        form = null;
+        renderAll();
+        toast("保存しました 🌸");
+      });
+    }).catch(function(err){
+      console.error(err);
+      toast("保存できませんでした。空き容量を確認してください");
+    }).then(function(){
+      btn.disabled = false;
+      btn.textContent = "保存する";
+    });
+  });
+
+  // ---------- バックアップ ----------
+  function blobToDataUrl(blob){
+    return new Promise(function(resolve, reject){
+      var r = new FileReader();
+      r.onload = function(){ resolve(r.result); };
+      r.onerror = function(){ reject(r.error); };
+      r.readAsDataURL(blob);
+    });
+  }
+  function dataUrlToBlob(url){ return fetch(url).then(function(r){ return r.blob(); }); }
+
+  $("btnExport").addEventListener("click", function(){
+    var list = Array.from(entries.values());
+    if(!list.length){ toast("まだ記録がありません"); return; }
+    toast("バックアップを作成しています…");
+    Promise.all(list.map(function(e){
+      return Promise.all(e.photos.map(function(p){
+        return Promise.all([blobToDataUrl(p.full), blobToDataUrl(p.thumb)]).then(function(d){
+          return Object.assign({}, p, { full: d[0], thumb: d[1] });
+        });
+      })).then(function(photos){ return Object.assign({}, e, { photos: photos }); });
+    })).then(function(out){
+      var blob = new Blob([JSON.stringify({ app: "flower-diary", version: 1, entries: out })], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "flower-diary-" + todayIso() + ".json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 10000);
+    }).catch(function(){ toast("バックアップを作成できませんでした"); });
+  });
+
+  $("btnImport").addEventListener("click", function(){ $("fileImport").click(); });
+  $("fileImport").addEventListener("change", function(ev){
+    var file = ev.target.files && ev.target.files[0];
+    ev.target.value = "";
+    if(!file) return;
+    file.text().then(function(text){
+      var data = JSON.parse(text);
+      if(!data || data.app !== "flower-diary" || !Array.isArray(data.entries)) throw new Error("format");
+      // すでに記録がある日はそのまま残し、ない日だけ追加する
+      var fresh = data.entries.filter(function(e){ return e && e.date && !entries.has(e.date); });
+      return Promise.all(fresh.map(function(e){
+        return Promise.all((e.photos || []).map(function(p){
+          return Promise.all([dataUrlToBlob(p.full), dataUrlToBlob(p.thumb)]).then(function(b){
+            return Object.assign({}, p, { full: b[0], thumb: b[1] });
+          });
+        })).then(function(photos){
+          var entry = Object.assign({}, e, { memo: e.memo || "", photos: photos });
+          return dbPut(entry).then(function(){ entries.set(entry.date, entry); });
+        });
+      })).then(function(){
+        renderAll();
+        toast("読み込みました（" + fresh.length + "日分を追加）");
+      });
+    }).catch(function(err){
+      console.error(err);
+      toast("読み込めませんでした。ファイルを確認してください");
+    });
+  });
+
+  // ---------- 起動 ----------
+  document.querySelectorAll(".tabs button").forEach(function(b){
+    b.addEventListener("click", function(){ switchTab(b.dataset.tab); });
+  });
+  $("formSheet").addEventListener("click", function(ev){
+    if(ev.target.id === "formSheet"){ closeOverlay("formSheet"); form = null; }
+  });
+
+  if(navigator.storage && navigator.storage.persist) navigator.storage.persist();
+
+  openDB().then(function(d){
+    db = d;
+    return dbAll();
+  }).then(function(list){
+    list.forEach(function(e){ entries.set(e.date, e); });
+    renderAll();
+  }).catch(function(err){
+    console.error(err);
+    renderAll();
+    toast("保存領域を開けませんでした（プライベートブラウズでは使えません）");
+  });
 })();
 </script>
 </body>
