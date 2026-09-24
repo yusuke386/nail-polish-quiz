@@ -532,13 +532,20 @@
     padding:8px 10px;
     margin-bottom:8px;
   }
-  .frow > img{
+  .frow{contain:layout paint}
+  .fph{position:relative;flex:none;width:52px;height:52px;margin-top:4px}
+  .fph img{
     width:52px;height:52px;
     object-fit:cover;
-    flex:none;
-    margin-top:4px;
-    -webkit-mask:var(--flower) center/contain no-repeat;
-    mask:var(--flower) center/contain no-repeat;
+    display:block;
+    border-radius:50%;
+    border:3px solid var(--accent-soft);
+  }
+  .fph .ic{
+    position:absolute;
+    right:-4px;bottom:-4px;
+    width:20px;height:20px;
+    color:var(--accent);
   }
   .fcol{flex:1;min-width:0}
   .frow input{
@@ -604,6 +611,38 @@
   }
   .pop .pf{font-size:12px;margin-bottom:6px;color:var(--ink)}
   .pop .pf small{display:block;color:var(--accent-deep);font-size:12px}
+
+  /* 書くモード：文字を打っている間は、打っている欄だけを表示する */
+  .w-bar{display:none}
+  body.writing .wrap,
+  body.writing .fab{display:none}
+  body.writing #formSheet{background:var(--bg);align-items:flex-start}
+  body.writing #formSheet .sheet{
+    max-height:none;
+    border-radius:0;
+    animation:none;
+    padding-top:calc(10px + env(safe-area-inset-top));
+  }
+  body.writing #formSheet .sheet::before{display:none}
+  #formSheet[data-writing] .w-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:4px;
+    font-size:13px;
+    font-weight:700;
+    color:var(--accent-deep);
+  }
+  #formSheet[data-writing] .w-bar span{display:flex;align-items:center;gap:5px}
+  #formSheet[data-writing] .w-bar .ic{color:var(--accent);width:18px;height:18px}
+  #formSheet[data-writing] .w-bar .btn{padding:6px 18px;font-size:13px}
+  #formSheet[data-writing] .f-head,
+  #formSheet[data-writing] .f-date,
+  #formSheet[data-writing] .f-photos,
+  #formSheet[data-writing] .actions,
+  #formSheet[data-writing] .link-del{display:none}
+  #formSheet[data-writing="memo"] #flowerRows{display:none}
+  #formSheet[data-writing="memo"] #fMemo{height:34vh;min-height:150px;resize:none}
 
   /* ボタン */
   .btn{
@@ -724,15 +763,16 @@
     grid-template-columns:repeat(3,1fr);
     gap:10px;
   }
+  /* 入力中の描き直しを軽くするため、記録画面の写真にはマスクや切り抜きを使わない */
+  .slots{contain:layout paint}
   .slot{
     position:relative;
     aspect-ratio:1;
     border-radius:18px;
-    overflow:hidden;
     background:var(--card);
     border:2px dashed var(--accent);
   }
-  .slot img{width:100%;height:100%;object-fit:cover;display:block}
+  .slot img{width:100%;height:100%;object-fit:cover;display:block;border-radius:16px}
   .slot .rm{
     position:absolute;top:4px;right:4px;
     width:24px;height:24px;border-radius:50%;
@@ -912,19 +952,29 @@
 <!-- 記録フォーム -->
 <div class="overlay" id="formSheet">
   <div class="sheet">
-    <h2><svg class="ic"><use href="#i-flower"/></svg><span id="formTitle">お花を記録する</span></h2>
+    <div class="w-bar">
+      <span><svg class="ic"><use href="#i-flower"/></svg>書いています…</span>
+      <button type="button" class="btn primary" id="wDone">完了</button>
+    </div>
+    <h2 class="f-head"><svg class="ic"><use href="#i-flower"/></svg><span id="formTitle">お花を記録する</span></h2>
 
-    <label for="fDate">日付</label>
-    <input type="date" id="fDate">
+    <div class="f-date">
+      <label for="fDate">日付</label>
+      <input type="date" id="fDate">
+    </div>
 
-    <label>写真（3枚まで）</label>
-    <div class="slots" id="slots"></div>
-    <input type="file" id="fPhoto" accept="image/*" multiple hidden>
-    <div class="geo" id="geoStatus"></div>
+    <div class="f-photos">
+      <label>写真（3枚まで）</label>
+      <div class="slots" id="slots"></div>
+      <input type="file" id="fPhoto" accept="image/*" multiple hidden>
+      <div class="geo" id="geoStatus"></div>
+    </div>
     <div id="flowerRows"></div>
 
-    <label for="fMemo">メモ</label>
-    <textarea id="fMemo" placeholder="見つけた場所、色や香り、感じたことなど"></textarea>
+    <div class="f-memo">
+      <label for="fMemo">メモ</label>
+      <textarea id="fMemo" placeholder="見つけた場所、色や香り、感じたことなど"></textarea>
+    </div>
 
     <div class="actions">
       <button class="btn" id="btnCancel">やめる</button>
@@ -1424,6 +1474,7 @@
     $("fDate").value = date;
     $("fMemo").value = e ? e.memo : "";
     $("fDelete").style.display = e ? "" : "none";
+    setWriting(false);
     renderSlots();
     updateGeo();
     openOverlay("formSheet");
@@ -1469,7 +1520,7 @@
     $("flowerRows").innerHTML = form.photos.length ? "<label>花の名前と花言葉</label>" + form.photos.map(function(p, i){
       var f = p.flower || {};
       return '<div class="frow" data-i="' + i + '" data-auto="' + (f.words && lookup(f.name) && lookup(f.name).words === f.words ? 1 : 0) + '">' +
-        '<img src="' + urlOf(p.thumb) + '" alt="">' +
+        '<span class="fph"><img src="' + urlOf(p.thumb) + '" alt="" decoding="async"><svg class="ic"><use href="#i-flower"/></svg></span>' +
         '<div class="fcol">' +
           '<input class="fname" placeholder="花の名前（例：チューリップ）" autocomplete="off" value="' + esc(f.name || "") + '">' +
           '<div class="sugg"></div>' +
@@ -1642,6 +1693,50 @@
     return { lat: lat, lng: lng };
   }
 
+  // ---------- 書くモード ----------
+  // メモ欄を打っている間だけ、メモ欄以外を表示しない
+  var savedScroll = 0;
+  // iPhoneはメモ欄をタップした瞬間、キーボードに隠れないよう画面をスクロールする。
+  // その直後にメモ欄が画面の上に移るので、スクロールした分だけはみ出して見えなくなる。
+  // 書くモードに入ったら、キーボードが出きるまで何度か一番上に戻す。
+  function resetWritingScroll(){
+    if(!document.body.classList.contains("writing")) return;
+    window.scrollTo(0, 0);
+    $("formSheet").querySelector(".sheet").scrollTop = 0;
+  }
+  function setWriting(on){
+    var sheet = $("formSheet");
+    if(on){
+      if(sheet.dataset.writing) return;
+      savedScroll = window.pageYOffset;
+      sheet.dataset.writing = "memo";
+      document.body.classList.add("writing");
+      resetWritingScroll();
+      requestAnimationFrame(resetWritingScroll);
+      [80, 250, 500].forEach(function(t){ setTimeout(resetWritingScroll, t); });
+    }else{
+      if(!sheet.dataset.writing) return;
+      delete sheet.dataset.writing;
+      document.body.classList.remove("writing");
+      window.scrollTo(0, savedScroll);
+    }
+  }
+  if(window.visualViewport) window.visualViewport.addEventListener("resize", resetWritingScroll);
+  $("formSheet").addEventListener("focusin", function(ev){
+    if(ev.target.id === "fMemo") setWriting(true);
+  });
+  $("formSheet").addEventListener("focusout", function(ev){
+    if(ev.target.id !== "fMemo") return;
+    setTimeout(function(){
+      if(document.activeElement !== $("fMemo")) setWriting(false);
+    }, 0);
+  });
+  $("wDone").addEventListener("pointerdown", function(ev){ ev.preventDefault(); });
+  $("wDone").addEventListener("click", function(){
+    if(document.activeElement) document.activeElement.blur();
+    setWriting(false);
+  });
+
   $("btnAdd").addEventListener("click", function(){ openForm(todayIso()); });
   $("btnCancel").addEventListener("click", function(){ closeOverlay("formSheet"); form = null; });
 
@@ -1770,8 +1865,13 @@
   $("btnSettings").addEventListener("click", function(){ openOverlay("settingsSheet"); });
   $("btnSettingsClose").addEventListener("click", function(){ closeOverlay("settingsSheet"); });
   $("settingsSheet").addEventListener("click", function(ev){ if(ev.target.id === "settingsSheet") closeOverlay("settingsSheet"); });
+  // 外側をタップしたら閉じる。ただし押し始めも外側だったときだけ
+  // （入力欄をタップして書くモードに切り替わると配置が変わり、指を離した位置が外側になることがあるため）
+  var formDownOutside = false;
+  $("formSheet").addEventListener("pointerdown", function(ev){ formDownOutside = ev.target.id === "formSheet"; });
   $("formSheet").addEventListener("click", function(ev){
-    if(ev.target.id === "formSheet"){ closeOverlay("formSheet"); form = null; }
+    if(ev.target.id === "formSheet" && formDownOutside && !$("formSheet").dataset.writing){ closeOverlay("formSheet"); form = null; }
+    formDownOutside = false;
   });
 
   if(navigator.storage && navigator.storage.persist) navigator.storage.persist();
