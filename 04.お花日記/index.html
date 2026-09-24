@@ -532,13 +532,20 @@
     padding:8px 10px;
     margin-bottom:8px;
   }
-  .frow > img{
+  .frow{contain:layout paint}
+  .fph{position:relative;flex:none;width:52px;height:52px;margin-top:4px}
+  .fph img{
     width:52px;height:52px;
     object-fit:cover;
-    flex:none;
-    margin-top:4px;
-    -webkit-mask:var(--flower) center/contain no-repeat;
-    mask:var(--flower) center/contain no-repeat;
+    display:block;
+    border-radius:50%;
+    border:3px solid var(--accent-soft);
+  }
+  .fph .ic{
+    position:absolute;
+    right:-4px;bottom:-4px;
+    width:20px;height:20px;
+    color:var(--accent);
   }
   .fcol{flex:1;min-width:0}
   .frow input{
@@ -724,15 +731,16 @@
     grid-template-columns:repeat(3,1fr);
     gap:10px;
   }
+  /* 入力中の描き直しを軽くするため、記録画面の写真にはマスクや切り抜きを使わない */
+  .slots{contain:layout paint}
   .slot{
     position:relative;
     aspect-ratio:1;
     border-radius:18px;
-    overflow:hidden;
     background:var(--card);
     border:2px dashed var(--accent);
   }
-  .slot img{width:100%;height:100%;object-fit:cover;display:block}
+  .slot img{width:100%;height:100%;object-fit:cover;display:block;border-radius:16px}
   .slot .rm{
     position:absolute;top:4px;right:4px;
     width:24px;height:24px;border-radius:50%;
@@ -1469,7 +1477,7 @@
     $("flowerRows").innerHTML = form.photos.length ? "<label>花の名前と花言葉</label>" + form.photos.map(function(p, i){
       var f = p.flower || {};
       return '<div class="frow" data-i="' + i + '" data-auto="' + (f.words && lookup(f.name) && lookup(f.name).words === f.words ? 1 : 0) + '">' +
-        '<img src="' + urlOf(p.thumb) + '" alt="">' +
+        '<span class="fph"><img src="' + urlOf(p.thumb) + '" alt="" decoding="async"><svg class="ic"><use href="#i-flower"/></svg></span>' +
         '<div class="fcol">' +
           '<input class="fname" placeholder="花の名前（例：チューリップ）" autocomplete="off" value="' + esc(f.name || "") + '">' +
           '<div class="sugg"></div>' +
