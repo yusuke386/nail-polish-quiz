@@ -615,7 +615,7 @@
   /* 書くモード：文字を打っている間は、打っている欄だけを表示する */
   .w-bar{display:none}
   body.writing .wrap,
-  body.writing .fab{visibility:hidden}
+  body.writing .fab{display:none}
   body.writing #formSheet{background:var(--bg);align-items:flex-start}
   body.writing #formSheet .sheet{
     max-height:none;
@@ -643,7 +643,6 @@
   #formSheet[data-writing] .link-del{display:none}
   #formSheet[data-writing="memo"] #flowerRows{display:none}
   #formSheet[data-writing="memo"] #fMemo{height:34vh;min-height:150px;resize:none}
-  #formSheet[data-writing="flower"] .f-memo{display:none}
 
   /* ボタン */
   .btn{
@@ -1475,7 +1474,7 @@
     $("fDate").value = date;
     $("fMemo").value = e ? e.memo : "";
     $("fDelete").style.display = e ? "" : "none";
-    setWriting(null);
+    setWriting(false);
     renderSlots();
     updateGeo();
     openOverlay("formSheet");
@@ -1695,32 +1694,47 @@
   }
 
   // ---------- 書くモード ----------
-  function setWriting(mode){
+  // メモ欄を打っている間だけ、メモ欄以外を表示しない
+  var savedScroll = 0;
+  // iPhoneはメモ欄をタップした瞬間、キーボードに隠れないよう画面をスクロールする。
+  // その直後にメモ欄が画面の上に移るので、スクロールした分だけはみ出して見えなくなる。
+  // 書くモードに入ったら、キーボードが出きるまで何度か一番上に戻す。
+  function resetWritingScroll(){
+    if(!document.body.classList.contains("writing")) return;
+    window.scrollTo(0, 0);
+    $("formSheet").querySelector(".sheet").scrollTop = 0;
+  }
+  function setWriting(on){
     var sheet = $("formSheet");
-    if(mode){
-      sheet.dataset.writing = mode;
+    if(on){
+      if(sheet.dataset.writing) return;
+      savedScroll = window.pageYOffset;
+      sheet.dataset.writing = "memo";
       document.body.classList.add("writing");
+      resetWritingScroll();
+      requestAnimationFrame(resetWritingScroll);
+      [80, 250, 500].forEach(function(t){ setTimeout(resetWritingScroll, t); });
     }else{
+      if(!sheet.dataset.writing) return;
       delete sheet.dataset.writing;
       document.body.classList.remove("writing");
+      window.scrollTo(0, savedScroll);
     }
   }
+  if(window.visualViewport) window.visualViewport.addEventListener("resize", resetWritingScroll);
   $("formSheet").addEventListener("focusin", function(ev){
-    if(ev.target.id === "fMemo") setWriting("memo");
-    else if(ev.target.classList.contains("fname") || ev.target.classList.contains("fwords")) setWriting("flower");
+    if(ev.target.id === "fMemo") setWriting(true);
   });
-  $("formSheet").addEventListener("focusout", function(){
-    // 次にフォーカスが移る先がわかってから判断する（花の名前 → 花言葉 の移動では抜けない）
+  $("formSheet").addEventListener("focusout", function(ev){
+    if(ev.target.id !== "fMemo") return;
     setTimeout(function(){
-      var a = document.activeElement;
-      var still = a && $("formSheet").contains(a) && (a.id === "fMemo" || a.classList.contains("fname") || a.classList.contains("fwords"));
-      if(!still) setWriting(null);
+      if(document.activeElement !== $("fMemo")) setWriting(false);
     }, 0);
   });
   $("wDone").addEventListener("pointerdown", function(ev){ ev.preventDefault(); });
   $("wDone").addEventListener("click", function(){
     if(document.activeElement) document.activeElement.blur();
-    setWriting(null);
+    setWriting(false);
   });
 
   $("btnAdd").addEventListener("click", function(){ openForm(todayIso()); });
