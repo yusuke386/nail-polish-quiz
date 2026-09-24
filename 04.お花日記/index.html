@@ -612,6 +612,39 @@
   .pop .pf{font-size:12px;margin-bottom:6px;color:var(--ink)}
   .pop .pf small{display:block;color:var(--accent-deep);font-size:12px}
 
+  /* 書くモード：文字を打っている間は、打っている欄だけを表示する */
+  .w-bar{display:none}
+  body.writing .wrap,
+  body.writing .fab{visibility:hidden}
+  body.writing #formSheet{background:var(--bg);align-items:flex-start}
+  body.writing #formSheet .sheet{
+    max-height:none;
+    border-radius:0;
+    animation:none;
+    padding-top:calc(10px + env(safe-area-inset-top));
+  }
+  body.writing #formSheet .sheet::before{display:none}
+  #formSheet[data-writing] .w-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:4px;
+    font-size:13px;
+    font-weight:700;
+    color:var(--accent-deep);
+  }
+  #formSheet[data-writing] .w-bar span{display:flex;align-items:center;gap:5px}
+  #formSheet[data-writing] .w-bar .ic{color:var(--accent);width:18px;height:18px}
+  #formSheet[data-writing] .w-bar .btn{padding:6px 18px;font-size:13px}
+  #formSheet[data-writing] .f-head,
+  #formSheet[data-writing] .f-date,
+  #formSheet[data-writing] .f-photos,
+  #formSheet[data-writing] .actions,
+  #formSheet[data-writing] .link-del{display:none}
+  #formSheet[data-writing="memo"] #flowerRows{display:none}
+  #formSheet[data-writing="memo"] #fMemo{height:34vh;min-height:150px;resize:none}
+  #formSheet[data-writing="flower"] .f-memo{display:none}
+
   /* ボタン */
   .btn{
     appearance:none;
@@ -920,19 +953,29 @@
 <!-- 記録フォーム -->
 <div class="overlay" id="formSheet">
   <div class="sheet">
-    <h2><svg class="ic"><use href="#i-flower"/></svg><span id="formTitle">お花を記録する</span></h2>
+    <div class="w-bar">
+      <span><svg class="ic"><use href="#i-flower"/></svg>書いています…</span>
+      <button type="button" class="btn primary" id="wDone">完了</button>
+    </div>
+    <h2 class="f-head"><svg class="ic"><use href="#i-flower"/></svg><span id="formTitle">お花を記録する</span></h2>
 
-    <label for="fDate">日付</label>
-    <input type="date" id="fDate">
+    <div class="f-date">
+      <label for="fDate">日付</label>
+      <input type="date" id="fDate">
+    </div>
 
-    <label>写真（3枚まで）</label>
-    <div class="slots" id="slots"></div>
-    <input type="file" id="fPhoto" accept="image/*" multiple hidden>
-    <div class="geo" id="geoStatus"></div>
+    <div class="f-photos">
+      <label>写真（3枚まで）</label>
+      <div class="slots" id="slots"></div>
+      <input type="file" id="fPhoto" accept="image/*" multiple hidden>
+      <div class="geo" id="geoStatus"></div>
+    </div>
     <div id="flowerRows"></div>
 
-    <label for="fMemo">メモ</label>
-    <textarea id="fMemo" placeholder="見つけた場所、色や香り、感じたことなど"></textarea>
+    <div class="f-memo">
+      <label for="fMemo">メモ</label>
+      <textarea id="fMemo" placeholder="見つけた場所、色や香り、感じたことなど"></textarea>
+    </div>
 
     <div class="actions">
       <button class="btn" id="btnCancel">やめる</button>
@@ -1432,6 +1475,7 @@
     $("fDate").value = date;
     $("fMemo").value = e ? e.memo : "";
     $("fDelete").style.display = e ? "" : "none";
+    setWriting(null);
     renderSlots();
     updateGeo();
     openOverlay("formSheet");
@@ -1650,6 +1694,35 @@
     return { lat: lat, lng: lng };
   }
 
+  // ---------- 書くモード ----------
+  function setWriting(mode){
+    var sheet = $("formSheet");
+    if(mode){
+      sheet.dataset.writing = mode;
+      document.body.classList.add("writing");
+    }else{
+      delete sheet.dataset.writing;
+      document.body.classList.remove("writing");
+    }
+  }
+  $("formSheet").addEventListener("focusin", function(ev){
+    if(ev.target.id === "fMemo") setWriting("memo");
+    else if(ev.target.classList.contains("fname") || ev.target.classList.contains("fwords")) setWriting("flower");
+  });
+  $("formSheet").addEventListener("focusout", function(){
+    // 次にフォーカスが移る先がわかってから判断する（花の名前 → 花言葉 の移動では抜けない）
+    setTimeout(function(){
+      var a = document.activeElement;
+      var still = a && $("formSheet").contains(a) && (a.id === "fMemo" || a.classList.contains("fname") || a.classList.contains("fwords"));
+      if(!still) setWriting(null);
+    }, 0);
+  });
+  $("wDone").addEventListener("pointerdown", function(ev){ ev.preventDefault(); });
+  $("wDone").addEventListener("click", function(){
+    if(document.activeElement) document.activeElement.blur();
+    setWriting(null);
+  });
+
   $("btnAdd").addEventListener("click", function(){ openForm(todayIso()); });
   $("btnCancel").addEventListener("click", function(){ closeOverlay("formSheet"); form = null; });
 
@@ -1778,8 +1851,13 @@
   $("btnSettings").addEventListener("click", function(){ openOverlay("settingsSheet"); });
   $("btnSettingsClose").addEventListener("click", function(){ closeOverlay("settingsSheet"); });
   $("settingsSheet").addEventListener("click", function(ev){ if(ev.target.id === "settingsSheet") closeOverlay("settingsSheet"); });
+  // 外側をタップしたら閉じる。ただし押し始めも外側だったときだけ
+  // （入力欄をタップして書くモードに切り替わると配置が変わり、指を離した位置が外側になることがあるため）
+  var formDownOutside = false;
+  $("formSheet").addEventListener("pointerdown", function(ev){ formDownOutside = ev.target.id === "formSheet"; });
   $("formSheet").addEventListener("click", function(ev){
-    if(ev.target.id === "formSheet"){ closeOverlay("formSheet"); form = null; }
+    if(ev.target.id === "formSheet" && formDownOutside && !$("formSheet").dataset.writing){ closeOverlay("formSheet"); form = null; }
+    formDownOutside = false;
   });
 
   if(navigator.storage && navigator.storage.persist) navigator.storage.persist();
