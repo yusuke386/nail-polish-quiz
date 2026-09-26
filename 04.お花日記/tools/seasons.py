@@ -453,15 +453,22 @@ DECO = {
               f"<circle cx='{20+17*math.cos(math.radians(a)):.1f}' cy='{20+17*math.sin(math.radians(a)):.1f}' r='1.6' fill='{c}'/>"
               for a, c in zip(range(0, 360, 30), ['#f0606f','#f4c95d','#8ec3f0','#f7a8c0','#9fcf8c','#c7a0e6']*2))
       + "<circle cx='20' cy='20' r='3' fill='#fff2b3'/>")),
-  9: (  # うさぎ / 栗
-    S("<ellipse cx='14' cy='9' rx='3.2' ry='8' fill='#fff' stroke='#e6dccd' transform='rotate(-12 14 9)'/><ellipse cx='22' cy='9' rx='3.2' ry='8' fill='#fff' stroke='#e6dccd' transform='rotate(12 22 9)'/>"
-      "<ellipse cx='14' cy='9' rx='1.4' ry='5.5' fill='#f7b6c6' transform='rotate(-12 14 9)'/><ellipse cx='22' cy='9' rx='1.4' ry='5.5' fill='#f7b6c6' transform='rotate(12 22 9)'/>"
-      "<ellipse cx='22' cy='30' rx='13' ry='9' fill='#fff' stroke='#e6dccd'/><circle cx='18' cy='21' r='8' fill='#fff' stroke='#e6dccd'/>"
-      "<circle cx='15.5' cy='20' r='1.3' fill='#e0525f'/><circle cx='34' cy='29' r='3' fill='#fff' stroke='#e6dccd'/>"),
-    S("<path d='M20 5 C26 10 34 16 34 25 C34 32 28 36 20 36 C12 36 6 32 6 25 C6 16 14 10 20 5Z' fill='#8a5a34'/>"
-      "<path d='M7 27 C10 32 30 32 33 27 C34 32 28 36 20 36 C12 36 6 32 7 27Z' fill='#e3c08e'/>"
-      "<path d='M14 14 C12 17 11 20 11 23' stroke='#b07a4a' stroke-width='1.6' fill='none' stroke-linecap='round'/>"
-      "<path d='M20 5 L20 2' stroke='#6e4424' stroke-width='2' stroke-linecap='round'/>")),
+  9: (  # うさぎ（正面向き）/ 桔梗
+    S("<ellipse cx='14' cy='10' rx='3.6' ry='9' fill='#fff' stroke='#e6dccd' transform='rotate(-10 14 10)'/><ellipse cx='26' cy='10' rx='3.6' ry='9' fill='#fff' stroke='#e6dccd' transform='rotate(10 26 10)'/>"
+      "<ellipse cx='14' cy='10.5' rx='1.6' ry='6' fill='#f7b6c6' transform='rotate(-10 14 10.5)'/><ellipse cx='26' cy='10.5' rx='1.6' ry='6' fill='#f7b6c6' transform='rotate(10 26 10.5)'/>"
+      "<ellipse cx='20' cy='36' rx='9' ry='4' fill='#fff' stroke='#e6dccd'/>"
+      "<ellipse cx='20' cy='25' rx='12.5' ry='10.5' fill='#fff' stroke='#e6dccd'/>"
+      "<circle cx='15.3' cy='23.5' r='1.7' fill='#4a3a41'/><circle cx='24.7' cy='23.5' r='1.7' fill='#4a3a41'/>"
+      "<circle cx='15.8' cy='23' r='.55' fill='#fff'/><circle cx='25.2' cy='23' r='.55' fill='#fff'/>"
+      "<ellipse cx='12' cy='27.5' rx='2.3' ry='1.4' fill='#f7b6c6'/><ellipse cx='28' cy='27.5' rx='2.3' ry='1.4' fill='#f7b6c6'/>"
+      "<ellipse cx='20' cy='26.6' rx='1.3' ry='1' fill='#f28bab'/>"
+      "<path d='M18 28.6 Q19 30.2 20 28.6 Q21 30.2 22 28.6' stroke='#4a3a41' stroke-width='.9' fill='none' stroke-linecap='round'/>"),
+    S("<path d='M21 30 C20 34 19 36 17 39' stroke='#6aa84f' stroke-width='2' fill='none' stroke-linecap='round'/>"
+      + g(13, 34, .7, -55, leaf("#7fbf63")) + g(28, 35, .55, 60, leaf("#8bc76e"))
+      + g(21, 17, 1, 0, star("#8e7ad6", 5, 14, 7.2).replace("stroke-width='1.2'", "stroke-width='3'"))
+      + g(21, 17, 1, 0, star("#b3a4ec", 5, 8.5, 4.4).replace("stroke-width='1.2'", "stroke-width='2'"))
+      + "".join(f"<path d='M21 17 L{21+11*math.cos(math.radians(-90+i*72)):.1f} {17+11*math.sin(math.radians(-90+i*72)):.1f}' stroke='#7563c4' stroke-width='.8' opacity='.7'/>" for i in range(5))
+      + "<circle cx='21' cy='17' r='2.4' fill='#fff'/><circle cx='21' cy='17' r='1.1' fill='#f4c95d'/>")),
   10: (  # キャンディ / 魔女の帽子
     S("<path d='M9 20 L2 13 L3 27Z M31 20 L38 13 L37 27Z' fill='#c7a0e6'/>"
       "<circle cx='20' cy='20' r='11' fill='#f59a3a'/>"
