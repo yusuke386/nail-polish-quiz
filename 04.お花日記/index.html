@@ -1045,7 +1045,8 @@
     gap:10px;
   }
   /* 入力中の描き直しを軽くするため、記録画面の写真にはマスクや切り抜きを使わない */
-  .slots{contain:layout paint}
+  /* 並べ替えで持ち上げた写真が枠の外に出られるよう、描画の切り抜き（paint）はしない */
+  .slots{contain:layout}
   .slot{
     position:relative;
     aspect-ratio:1;
@@ -1053,7 +1054,32 @@
     background:var(--card);
     border:2px dashed var(--accent);
   }
-  .slot img{width:100%;height:100%;object-fit:cover;display:block;border-radius:16px}
+  .slot img{
+    width:100%;height:100%;object-fit:cover;display:block;border-radius:16px;
+    /* 長押ししても「画像を保存」メニューや文字選択が出ないようにする */
+    -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;pointer-events:none;
+  }
+  .slot:not(.add){-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+  .slot .num{
+    position:absolute;left:4px;top:4px;
+    width:20px;height:20px;line-height:20px;
+    border-radius:50%;
+    background:var(--accent);color:#fff;
+    font-size:11px;font-weight:700;text-align:center;
+    pointer-events:none;
+  }
+  /* 長押しで持ち上げた写真 */
+  .slot.lifting{
+    z-index:5;
+    pointer-events:none;
+    box-shadow:0 10px 22px rgba(217,101,138,.35);
+    border-style:solid;
+    transition:none;
+  }
+  .slot.drop-target{outline:3px solid var(--accent);outline-offset:2px}
+  .slot.drop-target img{opacity:.6}
+  .reorder-hint{font-size:11px;color:var(--ink-soft);margin-top:6px}
+  .reorder-hint:empty{display:none}
   .slot .rm{
     position:absolute;top:4px;right:4px;
     width:24px;height:24px;border-radius:50%;
@@ -1247,6 +1273,7 @@
     <div class="f-photos">
       <label>写真（3枚まで）</label>
       <div class="slots" id="slots"></div>
+      <div class="reorder-hint" id="reorderHint"></div>
       <input type="file" id="fPhoto" accept="image/*" multiple hidden>
       <div class="geo" id="geoStatus"></div>
     </div>
@@ -1799,14 +1826,106 @@
   function renderSlots(){
     var html = form.photos.map(function(p, i){
       var badge = p.loc === "photo" ? "📍写真" : p.loc === "here" ? "📍現在地" : "";
-      return '<div class="slot"><img src="' + urlOf(p.thumb) + '" alt="">' +
+      return '<div class="slot" data-i="' + i + '"><img src="' + urlOf(p.thumb) + '" alt="" draggable="false">' +
+        '<span class="num">' + (i + 1) + "</span>" +
         '<button class="rm" data-i="' + i + '" aria-label="写真を外す">×</button>' +
         (badge ? '<span class="loc">' + badge + "</span>" : "") + "</div>";
     }).join("");
     if(form.photos.length < MAX_PHOTOS) html += '<button class="slot add" id="slotAdd" aria-label="写真を追加"><svg class="ic"><use href="#i-flower"/></svg>写真を追加</button>';
     $("slots").innerHTML = html;
+    $("reorderHint").textContent = form.photos.length > 1 ? "写真を長押しすると、ドラッグで順番を入れ替えられます（1枚目がカレンダーに出ます）" : "";
     renderFlowerRows();
   }
+
+  // ---------- 写真の並べ替え（長押し → ドラッグ → 指を離した位置へ） ----------
+  var LONG_PRESS_MS = 350;
+  var drag = null;
+
+  function slotAt(x, y){
+    var el = document.elementFromPoint(x, y);
+    var slot = el && el.closest ? el.closest("#slots .slot:not(.add)") : null;
+    return slot && !slot.classList.contains("lifting") ? slot : null;
+  }
+
+  function pressStart(slot, x, y){
+    if(!form || form.photos.length < 2) return;
+    drag = { slot: slot, from: Number(slot.dataset.i), x0: x, y0: y, active: false, target: null };
+    drag.timer = setTimeout(function(){
+      if(!drag) return;
+      drag.active = true;
+      slot.classList.add("lifting");
+      slot.style.transform = "scale(1.08)";
+      if(navigator.vibrate) navigator.vibrate(15);
+    }, LONG_PRESS_MS);
+  }
+
+  function pressMove(x, y, ev){
+    if(!drag) return;
+    if(!drag.active){
+      // 長押しの前に指が動いたら、スクロールとみなしてやめる
+      if(Math.abs(x - drag.x0) > 10 || Math.abs(y - drag.y0) > 10) pressCancel();
+      return;
+    }
+    if(ev && ev.cancelable) ev.preventDefault();
+    drag.slot.style.transform = "translate(" + (x - drag.x0) + "px," + (y - drag.y0) + "px) scale(1.08)";
+    var t = slotAt(x, y);
+    if(drag.target && drag.target !== t) drag.target.classList.remove("drop-target");
+    drag.target = t;
+    if(t) t.classList.add("drop-target");
+  }
+
+  function pressEnd(){
+    if(!drag) return;
+    clearTimeout(drag.timer);
+    var d = drag;
+    drag = null;
+    if(!d.active) return;
+    d.slot.classList.remove("lifting");
+    d.slot.style.transform = "";
+    if(d.target){
+      var to = Number(d.target.dataset.i);
+      // 重ねた写真と場所を交換する
+      if(to !== d.from){
+        var tmp = form.photos[d.from];
+        form.photos[d.from] = form.photos[to];
+        form.photos[to] = tmp;
+      }
+    }
+    renderSlots();
+    updateGeo();
+  }
+
+  function pressCancel(){
+    if(!drag) return;
+    clearTimeout(drag.timer);
+    if(drag.active){
+      drag.slot.classList.remove("lifting");
+      drag.slot.style.transform = "";
+      if(drag.target) drag.target.classList.remove("drop-target");
+    }
+    drag = null;
+  }
+
+  $("slots").addEventListener("touchstart", function(ev){
+    var slot = ev.target.closest(".slot:not(.add)");
+    if(!slot || ev.target.closest(".rm") || ev.touches.length > 1) return;
+    pressStart(slot, ev.touches[0].clientX, ev.touches[0].clientY);
+  }, { passive: true });
+  // 持ち上げている間は画面がスクロールしないよう、passive:false で止める
+  document.addEventListener("touchmove", function(ev){
+    if(drag) pressMove(ev.touches[0].clientX, ev.touches[0].clientY, ev);
+  }, { passive: false });
+  document.addEventListener("touchend", pressEnd);
+  document.addEventListener("touchcancel", pressCancel);
+  // パソコンのマウスでも同じように並べ替えられるようにする
+  $("slots").addEventListener("mousedown", function(ev){
+    var slot = ev.target.closest(".slot:not(.add)");
+    if(!slot || ev.target.closest(".rm") || ev.button !== 0) return;
+    pressStart(slot, ev.clientX, ev.clientY);
+  });
+  document.addEventListener("mousemove", function(ev){ if(drag) pressMove(ev.clientX, ev.clientY, ev); });
+  document.addEventListener("mouseup", pressEnd);
+  $("slots").addEventListener("contextmenu", function(ev){ if(ev.target.closest(".slot")) ev.preventDefault(); });
 
   // 写真ごとに「花の名前」と「花言葉」を入力する欄
   function renderFlowerRows(){
