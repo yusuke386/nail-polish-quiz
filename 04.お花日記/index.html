@@ -1043,6 +1043,17 @@
     font-family:inherit;
     outline:none;
   }
+  /* iPhoneの日付欄は、そのままだと中身の幅に合わせて広がり、画面の右にはみ出す */
+  input[type="date"]{
+    -webkit-appearance:none;
+    appearance:none;
+    display:block;
+    min-width:0;
+    max-width:100%;
+    min-height:46px;
+    text-align:left;
+  }
+  input[type="date"]::-webkit-date-and-time-value{text-align:left}
   input[type="date"]:focus,textarea:focus{border-color:var(--accent)}
   textarea{min-height:110px;resize:vertical}
   .slots{
@@ -1356,7 +1367,7 @@
 <button class="update-bar" id="updateBar">🌸 新しいバージョンがあります（タップで更新）</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="hanakotoba.js?v=2026-09-26-3"></script>
+<script src="hanakotoba.js?v=2026-09-26-4"></script>
 <script>
 (function(){
   "use strict";
@@ -2346,6 +2357,51 @@
   });
   $("btnSettings").addEventListener("click", function(){ openOverlay("settingsSheet"); });
   $("btnSettingsClose").addEventListener("click", function(){ closeOverlay("settingsSheet"); });
+
+  // ---------- 下にスワイプして画面（シート）を閉じる ----------
+  function swipeToClose(id, close){
+    var sheet = $(id).querySelector(".sheet"), st = null;
+    sheet.addEventListener("touchstart", function(ev){
+      st = null;
+      if(ev.touches.length !== 1 || document.body.classList.contains("writing")) return;
+      // 入力欄の中を触っているときや、中身が途中までスクロールしているときは閉じる動きにしない
+      if(ev.target.closest("input, textarea, select") || sheet.scrollTop > 0) return;
+      st = { x: ev.touches[0].clientX, y: ev.touches[0].clientY, t: Date.now(), dy: 0, active: false };
+    }, { passive: true });
+    sheet.addEventListener("touchmove", function(ev){
+      if(!st) return;
+      if(drag && drag.active){ st = null; sheet.style.transform = ""; return; } // 写真の並べ替え中
+      var dx = ev.touches[0].clientX - st.x, dy = ev.touches[0].clientY - st.y;
+      if(!st.active){
+        if(dy > 8 && dy > Math.abs(dx)) st.active = true;
+        else if(dy < -8 || Math.abs(dx) > 8){ st = null; return; }
+        else return;
+      }
+      if(ev.cancelable) ev.preventDefault();
+      st.dy = Math.max(0, dy);
+      sheet.style.transition = "none";
+      sheet.style.transform = "translateY(" + st.dy + "px)";
+    }, { passive: false });
+    function end(){
+      if(!st) return;
+      var s = st; st = null;
+      if(!s.active) return;
+      var flick = s.dy > 40 && Date.now() - s.t < 300;
+      sheet.style.transition = "transform .2s ease";
+      if(s.dy > 110 || flick){
+        sheet.style.transform = "translateY(100%)";
+        setTimeout(function(){ close(); sheet.style.transition = ""; sheet.style.transform = ""; }, 190);
+      }else{
+        sheet.style.transform = "";
+        setTimeout(function(){ sheet.style.transition = ""; }, 210);
+      }
+    }
+    sheet.addEventListener("touchend", end);
+    sheet.addEventListener("touchcancel", end);
+  }
+  swipeToClose("formSheet", function(){ closeOverlay("formSheet"); form = null; });
+  swipeToClose("detailSheet", function(){ closeOverlay("detailSheet"); });
+  swipeToClose("settingsSheet", function(){ closeOverlay("settingsSheet"); });
   $("settingsSheet").addEventListener("click", function(ev){ if(ev.target.id === "settingsSheet") closeOverlay("settingsSheet"); });
   // 外側をタップしたら閉じる。ただし押し始めも外側だったときだけ
   // （入力欄をタップして書くモードに切り替わると配置が変わり、指を離した位置が外側になることがあるため）
@@ -2363,7 +2419,7 @@
   // version.json だけはキャッシュせずに取りにいき、版が違えば「?v=新しい版」付きのURLで開き直して、
   // 覚えている古いページを使わずに新しい版を読み込む。
   // ※ 更新するときは APP_VERSION と version.json の両方を同じ値に書き換える
-  var APP_VERSION = "2026-09-26-3";
+  var APP_VERSION = "2026-09-26-4";
   $("appVersion").textContent = "バージョン " + APP_VERSION;
   var newVersion = null;
   function reloadTo(v){ location.replace(location.pathname + "?v=" + encodeURIComponent(v)); }
