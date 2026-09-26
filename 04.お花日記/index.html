@@ -1166,6 +1166,28 @@
   .lightbox.open{display:flex}
   .lightbox img{max-width:100%;max-height:100%;object-fit:contain}
 
+  /* 新しいバージョンのお知らせ */
+  .update-bar{
+    position:fixed;
+    left:50%;
+    top:calc(10px + env(safe-area-inset-top));
+    transform:translateX(-50%);
+    z-index:1300;
+    display:none;
+    border:none;
+    background:var(--accent-deep);
+    color:#fff;
+    font-family:inherit;
+    font-size:13px;
+    font-weight:700;
+    padding:9px 18px;
+    border-radius:999px;
+    box-shadow:0 4px 14px rgba(217,101,138,.4);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .update-bar.show{display:block}
+  .app-version{font-size:11px;color:var(--ink-soft);text-align:center;margin-top:14px}
   .toast{
     position:fixed;
     left:50%;top:calc(16px + env(safe-area-inset-top));
@@ -1303,6 +1325,7 @@
       <button class="btn" id="btnSettingsClose">閉じる</button>
     </div>
     <input type="file" id="fileImport" accept="application/json,.json" hidden>
+    <div class="app-version" id="appVersion"></div>
   </div>
 </div>
 
@@ -1324,9 +1347,10 @@
 
 <div class="lightbox" id="lightbox"><img alt=""></div>
 <div class="toast" id="toast"></div>
+<button class="update-bar" id="updateBar">🌸 新しいバージョンがあります（タップで更新）</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="hanakotoba.js"></script>
+<script src="hanakotoba.js?v=2026-09-26-1"></script>
 <script>
 (function(){
   "use strict";
@@ -2291,6 +2315,35 @@
   });
 
   if(navigator.storage && navigator.storage.persist) navigator.storage.persist();
+
+  // ---------- 新しいバージョンの確認 ----------
+  // GitHub Pages はページを最大10分ほど端末に覚えさせるため、ホーム画面から開くと古い版のままになりやすい。
+  // version.json だけはキャッシュせずに取りにいき、版が違えば「?v=新しい版」付きのURLで開き直して、
+  // 覚えている古いページを使わずに新しい版を読み込む。
+  // ※ 更新するときは APP_VERSION と version.json の両方を同じ値に書き換える
+  var APP_VERSION = "2026-09-26-1";
+  $("appVersion").textContent = "バージョン " + APP_VERSION;
+  var newVersion = null;
+  function reloadTo(v){ location.replace(location.pathname + "?v=" + encodeURIComponent(v)); }
+  function anySheetOpen(){ return !!document.querySelector(".overlay.open"); }
+  function checkUpdate(atStart){
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+      if(!d || !d.version || d.version === APP_VERSION) return;
+      // 開き直しても同じ版が来ない（まだ公開の途中など）ときに、何度も開き直さないようにする
+      if(new URLSearchParams(location.search).get("v") === d.version) return;
+      newVersion = d.version;
+      // 起動した直後で、記録を書いている途中でなければ、そのまま新しい版に切り替える
+      if(atStart && !anySheetOpen()) reloadTo(newVersion);
+      else $("updateBar").classList.add("show");
+    }).catch(function(){});
+  }
+  $("updateBar").addEventListener("click", function(){
+    if(anySheetOpen() && !confirm("記録の途中です。保存していない内容は消えますが、更新しますか？")) return;
+    if(newVersion) reloadTo(newVersion);
+  });
+  checkUpdate(true);
+  // ホーム画面のアプリは閉じずに裏に残ることが多いので、画面に戻ってきたときにも確認する
+  document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "visible") checkUpdate(false); });
 
   openDB().then(function(d){
     db = d;
