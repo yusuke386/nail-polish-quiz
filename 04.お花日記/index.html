@@ -78,6 +78,9 @@
     margin-bottom:0;
   }
   h1{
+    /* タイトルは端末に入っている丸ゴシックを優先する（Webフォントは文字ごとに分けて読み込まれ、
+       読み込み途中の字だけ別の書体になって形が違って見えることがあるため） */
+    font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Zen Maru Gothic","Yu Gothic",Meiryo,sans-serif;
     font-weight:700;
     font-size:23px;
     line-height:1.35;
