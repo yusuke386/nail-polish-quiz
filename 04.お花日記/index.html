@@ -247,6 +247,16 @@
     transform:translateX(-50%);
     color:#ffb3c7;
   }
+  /* 満月の日の🌕（写真がある日は出さない） */
+  .day .moon{
+    position:absolute;
+    left:50%;top:56%;
+    transform:translate(-50%,-50%);
+    font-size:20px;
+    line-height:1;
+    pointer-events:none;
+  }
+  .day .moon.small{left:auto;right:3px;top:3px;transform:none;font-size:12px}
   .day.out{opacity:.35}
   .day.today{background:var(--accent-soft)}
   .day.today .n{background:var(--accent);color:#fff}
@@ -1367,7 +1377,7 @@
 <button class="update-bar" id="updateBar">🌸 新しいバージョンがあります（タップで更新）</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="hanakotoba.js?v=2026-09-26-4"></script>
+<script src="hanakotoba.js?v=2026-09-26-5"></script>
 <script>
 (function(){
   "use strict";
@@ -1446,6 +1456,46 @@
       return '<div class="hk"><img src="' + urlOf(p.thumb) + '" alt=""><div><b>' + esc(f.name) + "</b>" +
         (f.words ? "<span>" + esc(f.words) + "</span>" : "") + "</div></div>";
     }).join("");
+  }
+
+  // ---------- 満月の日の計算 ----------
+  // Meeus「Astronomical Algorithms」49章の月相の式（満月、誤差は数分）。端末の時刻（日本時間）での日付にする。
+  function fullMoonDate(k){
+    var r = Math.PI / 180, T = k / 1236.85;
+    var jde = 2451550.09766 + 29.530588861*k + 0.00015437*T*T - 0.000000150*T*T*T + 0.00000000073*T*T*T*T;
+    var E = 1 - 0.002516*T - 0.0000074*T*T;
+    var M = (2.5534 + 29.10535670*k - 0.0000014*T*T) * r;
+    var Mp = (201.5643 + 385.81693528*k + 0.0107582*T*T + 0.00001238*T*T*T) * r;
+    var F = (160.7108 + 390.67050284*k - 0.0016118*T*T) * r;
+    var Om = (124.7746 - 1.56375588*k + 0.0020672*T*T) * r;
+    var sin = Math.sin;
+    jde += -0.40614*sin(Mp) + 0.17302*E*sin(M) + 0.01614*sin(2*Mp) + 0.01043*sin(2*F)
+      + 0.00734*E*sin(Mp-M) - 0.00515*E*sin(Mp+M) + 0.00209*E*E*sin(2*M) - 0.00111*sin(Mp-2*F)
+      - 0.00057*sin(Mp+2*F) + 0.00056*E*sin(2*Mp+M) - 0.00042*sin(3*Mp) + 0.00042*E*sin(M+2*F)
+      + 0.00038*E*sin(M-2*F) - 0.00024*E*sin(2*Mp-M) - 0.00017*sin(Om) - 0.00007*sin(Mp+2*M)
+      + 0.00004*sin(2*Mp-2*F) + 0.00004*sin(3*M) + 0.00003*sin(Mp+M-2*F) + 0.00003*sin(2*Mp+2*F)
+      - 0.00003*sin(Mp+M+2*F) + 0.00003*sin(Mp-M+2*F) - 0.00002*sin(Mp-M-2*F) - 0.00002*sin(3*Mp+M) + 0.00002*sin(4*Mp);
+    var A = [[0.000325,299.77+0.107408*k-0.009173*T*T],[0.000165,251.88+0.016321*k],[0.000164,251.83+26.651886*k],
+      [0.000126,349.42+36.412478*k],[0.000110,84.66+18.206239*k],[0.000062,141.74+53.303771*k],[0.000060,207.14+2.453732*k],
+      [0.000056,154.84+7.306860*k],[0.000047,34.52+27.261239*k],[0.000042,207.19+0.121824*k],[0.000040,291.34+1.844379*k],
+      [0.000037,161.72+24.198154*k],[0.000035,239.56+25.513099*k],[0.000023,331.55+3.592518*k]];
+    A.forEach(function(a){ jde += a[0] * sin(a[1] * r); });
+    return new Date((jde - 2440587.5) * 86400000 - 69000); // ΔT（約69秒）を引いて世界時にする
+  }
+  var fullMoonCache = {};
+  function fullMoonsOfMonth(y, m){
+    var key = y + "-" + m;
+    if(fullMoonCache[key]) return fullMoonCache[key];
+    var set = {}, k0 = Math.floor((y + m / 12 - 2000) * 12.3685);
+    for(var k = k0 - 2; k <= k0 + 2; k++){
+      var d = fullMoonDate(k + 0.5);
+      if(d.getFullYear() === y && d.getMonth() === m) set[iso(d)] = true;
+    }
+    return (fullMoonCache[key] = set);
+  }
+  function isFullMoon(key){
+    var d = parseIso(key);
+    return !!fullMoonsOfMonth(d.getFullYear(), d.getMonth())[key];
   }
 
   // ---------- 保存（IndexedDB） ----------
@@ -1557,6 +1607,9 @@
           inner += '<img src="' + urlOf(e.photos[0].thumb) + '" alt="">';
         }else if(e){
           inner += '<svg class="mini"><use href="#i-flower"/></svg>';
+          if(isFullMoon(key)) inner += '<span class="moon small" aria-label="満月">🌕</span>';
+        }else if(isFullMoon(key)){
+          inner += '<span class="moon" aria-label="満月">🌕</span>';
         }
         html += '<button class="' + cls.join(" ") + '" data-date="' + key + '">' + inner + "</button>";
       }
@@ -1710,7 +1763,7 @@
     for(var i = 0; i < 7; i++){
       var d = addDays(viewWeek, i), key = iso(d), e = entries.get(key);
       html += '<div class="wday' + (key === today ? " today" : "") + (e ? "" : " empty") + '" data-date="' + key + '">';
-      html += '<div class="wd"><svg class="ic"><use href="#i-flower"/></svg>' + (d.getMonth()+1) + "月" + d.getDate() + "日（" + WEEKDAYS[d.getDay()] + "）</div>";
+      html += '<div class="wd"><svg class="ic"><use href="#i-flower"/></svg>' + (d.getMonth()+1) + "月" + d.getDate() + "日（" + WEEKDAYS[d.getDay()] + "）" + (isFullMoon(key) ? " 🌕" : "") + "</div>";
       if(e){
         if(e.photos.length){
           html += '<div class="ph">' + e.photos.map(function(p){
@@ -2419,7 +2472,7 @@
   // version.json だけはキャッシュせずに取りにいき、版が違えば「?v=新しい版」付きのURLで開き直して、
   // 覚えている古いページを使わずに新しい版を読み込む。
   // ※ 更新するときは APP_VERSION と version.json の両方を同じ値に書き換える
-  var APP_VERSION = "2026-09-26-4";
+  var APP_VERSION = "2026-09-26-5";
   $("appVersion").textContent = "バージョン " + APP_VERSION;
   var newVersion = null;
   function reloadTo(v){ location.replace(location.pathname + "?v=" + encodeURIComponent(v)); }
