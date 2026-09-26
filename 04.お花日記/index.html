@@ -154,7 +154,13 @@
   }
 
   /* 月カレンダー */
+  /* 左右スワイプで月を切り替えたときに、カレンダーを横からすべり込ませる */
+  @keyframes calFromRight{from{opacity:.2;transform:translateX(36px)}to{opacity:1;transform:none}}
+  @keyframes calFromLeft{from{opacity:.2;transform:translateX(-36px)}to{opacity:1;transform:none}}
+  .cal.slide-next{animation:calFromRight .22s ease-out}
+  .cal.slide-prev{animation:calFromLeft .22s ease-out}
   .cal{
+    touch-action:pan-y;
     position:relative;
     background:var(--card);
     border:2px solid var(--line);
@@ -1350,7 +1356,7 @@
 <button class="update-bar" id="updateBar">🌸 新しいバージョンがあります（タップで更新）</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="hanakotoba.js?v=2026-09-26-1"></script>
+<script src="hanakotoba.js?v=2026-09-26-2"></script>
 <script>
 (function(){
   "use strict";
@@ -1550,6 +1556,7 @@
   }
 
   $("cal").addEventListener("click", function(ev){
+    if(Date.now() - swipedAt < 500) return;
     var wk = ev.target.closest(".wk");
     if(wk){
       viewWeek = parseIso(wk.dataset.week);
@@ -1564,8 +1571,43 @@
       openForm(day.dataset.date);
     }
   });
-  $("mPrev").addEventListener("click", function(){ viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1); renderMonth(); });
-  $("mNext").addEventListener("click", function(){ viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1); renderMonth(); });
+  function shiftMonth(n){
+    viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + n, 1);
+    renderMonth();
+    var cal = $("cal");
+    cal.style.transform = "";
+    cal.classList.remove("slide-next", "slide-prev");
+    void cal.offsetWidth; // アニメーションを最初からやり直す
+    cal.classList.add(n > 0 ? "slide-next" : "slide-prev");
+  }
+  $("mPrev").addEventListener("click", function(){ shiftMonth(-1); });
+  $("mNext").addEventListener("click", function(){ shiftMonth(1); });
+
+  // カレンダーを左右にスワイプして月を切り替える（左へ＝次の月、右へ＝前の月）
+  var swipe = null, swipedAt = 0;
+  $("cal").addEventListener("touchstart", function(ev){
+    if(ev.touches.length !== 1){ swipe = null; return; }
+    swipe = { x: ev.touches[0].clientX, y: ev.touches[0].clientY, t: Date.now(), horizontal: null };
+  }, { passive: true });
+  $("cal").addEventListener("touchmove", function(ev){
+    if(!swipe) return;
+    var dx = ev.touches[0].clientX - swipe.x, dy = ev.touches[0].clientY - swipe.y;
+    // 最初に大きく動いた向きで、横スワイプか縦スクロールかを決める
+    if(swipe.horizontal === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) swipe.horizontal = Math.abs(dx) > Math.abs(dy);
+    if(swipe.horizontal) $("cal").style.transform = "translateX(" + (dx * 0.35) + "px)";
+  }, { passive: true });
+  $("cal").addEventListener("touchend", function(ev){
+    if(!swipe) return;
+    var s = swipe; swipe = null;
+    var t = ev.changedTouches[0];
+    var dx = t.clientX - s.x, dy = t.clientY - s.y;
+    $("cal").style.transform = "";
+    if(s.horizontal && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - s.t < 800){
+      swipedAt = Date.now();
+      shiftMonth(dx < 0 ? 1 : -1);
+    }
+  });
+  $("cal").addEventListener("touchcancel", function(){ swipe = null; $("cal").style.transform = ""; });
 
   // ---------- カレンダーの下：選んだ日のお花 ----------
   var POT_SVG = '<svg viewBox="0 0 100 100" aria-hidden="true">' +
@@ -2321,7 +2363,7 @@
   // version.json だけはキャッシュせずに取りにいき、版が違えば「?v=新しい版」付きのURLで開き直して、
   // 覚えている古いページを使わずに新しい版を読み込む。
   // ※ 更新するときは APP_VERSION と version.json の両方を同じ値に書き換える
-  var APP_VERSION = "2026-09-26-1";
+  var APP_VERSION = "2026-09-26-2";
   $("appVersion").textContent = "バージョン " + APP_VERSION;
   var newVersion = null;
   function reloadTo(v){ location.replace(location.pathname + "?v=" + encodeURIComponent(v)); }
