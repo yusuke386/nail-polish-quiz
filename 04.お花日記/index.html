@@ -162,6 +162,7 @@
   .cal::before,.cal::after{
     content:"";
     position:absolute;
+    pointer-events:none;
     width:34px;height:34px;
     -webkit-mask:var(--flower) center/contain no-repeat;
     mask:var(--flower) center/contain no-repeat;
@@ -378,6 +379,49 @@
 
   /* カレンダーの下：選んだ日のお花 */
   .day.sel{box-shadow:0 0 0 2px var(--accent-deep) inset}
+
+  /* ---------- 季節のカレンダー（月ごとの背景と小さなイラスト） ---------- */
+  .nav .label[data-season]::before{
+    content:"";
+    display:none;
+    width:22px;height:18px;
+    margin-right:6px;
+    vertical-align:-2px;
+    background:center/contain no-repeat;
+  }
+  /* 1月：お正月（青海波・門松・鏡餅・扇） */
+  .nav .label[data-season="1"]::before{display:inline-block;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 20'><path d='M12 19 L1.5 7 A14 14 0 0 1 22.5 7 Z' fill='%23e0525f'/><path d='M12 19 L6 11 A8.5 8.5 0 0 1 18 11 Z' fill='%23f4c95d'/><path d='M12 19 L12 5.5 M12 19 L6 8 M12 19 L18 8' stroke='%23fff' stroke-width='.7' opacity='.6'/><circle cx='12' cy='18' r='1.5' fill='%23b8894c'/></svg>")}
+  .cal[data-season="1"]{
+    border-color:#f3d9b8;
+    background-color:#fffaf1;
+    background-image:
+      radial-gradient(circle at 100% 150%, #fffaf1 24%, #f5e4c8 24%, #f5e4c8 28%, #fffaf1 28%, #fffaf1 36%, #f5e4c8 36%, #f5e4c8 40%, transparent 40%, transparent),
+      radial-gradient(circle at 0 150%, #fffaf1 24%, #f5e4c8 24%, #f5e4c8 28%, #fffaf1 28%, #fffaf1 36%, #f5e4c8 36%, #f5e4c8 40%, transparent 40%, transparent),
+      radial-gradient(circle at 50% 100%, #f5e4c8 10%, #fffaf1 10%, #fffaf1 23%, #f5e4c8 23%, #f5e4c8 30%, #fffaf1 30%, #fffaf1 43%, #f5e4c8 43%, #f5e4c8 50%, #fffaf1 50%, #fffaf1 63%, #f5e4c8 63%, #f5e4c8 71%, transparent 71%, transparent),
+      radial-gradient(circle at 100% 50%, #f5e4c8 5%, #fffaf1 5%, #fffaf1 15%, #f5e4c8 15%, #f5e4c8 20%, #fffaf1 20%, #fffaf1 29%, #f5e4c8 29%, #f5e4c8 34%, #fffaf1 34%, #fffaf1 44%, #f5e4c8 44%, #f5e4c8 49%, transparent 49%, transparent),
+      radial-gradient(circle at 0 50%, #f5e4c8 5%, #fffaf1 5%, #fffaf1 15%, #f5e4c8 15%, #f5e4c8 20%, #fffaf1 20%, #fffaf1 29%, #f5e4c8 29%, #f5e4c8 34%, #fffaf1 34%, #fffaf1 44%, #f5e4c8 44%, #f5e4c8 49%, transparent 49%, transparent);
+    background-size:36px 18px;
+  }
+  .cal[data-season="1"]::before{
+    -webkit-mask:none;mask:none;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 46'><polygon points='8,16 14,11 14,34 8,34' fill='%2365b35e'/><polygon points='14,7 20,2 20,34 14,34' fill='%2357a653'/><polygon points='20,11 26,16 26,34 20,34' fill='%2365b35e'/><path d='M8 16 L14 11 M14 7 L20 2 M20 11 L26 16' stroke='%23d8efc0' stroke-width='1.6'/><circle cx='7' cy='31' r='5' fill='%233f7d47'/><circle cx='27' cy='31' r='5' fill='%233f7d47'/><circle cx='10' cy='27' r='3.5' fill='%234f8f55'/><circle cx='24' cy='27' r='3.5' fill='%234f8f55'/><circle cx='22' cy='30' r='1.7' fill='%23e0525f'/><circle cx='24.8' cy='28.4' r='1.7' fill='%23e0525f'/><rect x='5' y='32' width='24' height='13' rx='3' fill='%23dcb57e'/><rect x='5' y='36' width='24' height='3' fill='%23b8894c'/></svg>") center/contain no-repeat;
+    width:30px;height:40px;
+    top:-20px;left:-4px;
+    transform:none;
+  }
+  .cal[data-season="1"]::after{
+    -webkit-mask:none;mask:none;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect x='5' y='31' width='30' height='8' rx='2' fill='%23e0525f'/><rect x='9' y='33' width='22' height='3' rx='1.5' fill='%23f38b8f'/><path d='M4 30 L20 24 L36 30 Z' fill='%23fff' stroke='%23efe3d1'/><ellipse cx='20' cy='27' rx='15' ry='6.5' fill='%23fff' stroke='%23efe3d1'/><ellipse cx='20' cy='19.5' rx='11' ry='5.5' fill='%23fff' stroke='%23efe3d1'/><circle cx='20' cy='11' r='5' fill='%23ffa13d'/><ellipse cx='23.5' cy='6.5' rx='3' ry='1.6' fill='%235fae5a' transform='rotate(-25 23.5 6.5)'/></svg>") center/contain no-repeat;
+    width:30px;height:30px;
+    top:-16px;right:-9px;
+    transform:none;
+  }
+  .cal[data-season="1"] .day{background:rgba(255,255,255,.82)}
+  .cal[data-season="1"] .day.today{background:#fde6e2}
+  .cal[data-season="1"] .day.today .n{background:#e0525f}
+  .cal[data-season="1"] .day.sel{box-shadow:0 0 0 2px #c9474f inset}
+  .cal[data-season="1"] .day.has-photo .n{color:#c9474f}
+  .cal[data-season="1"] .wk{background:linear-gradient(#fdebe8,#fbd9d4);color:#c9474f}
   .panel{
     position:relative;
     margin-top:10px;
@@ -1178,6 +1222,8 @@
     var last = new Date(y, m + 1, 0);
     var today = todayIso();
     $("mLabel").textContent = y + "年" + (m + 1) + "月";
+    // 月ごとに季節の背景とイラストを切り替える
+    $("mLabel").dataset.season = $("cal").dataset.season = String(m + 1);
 
     var html = '<div class="cal-row cal-head"><div></div>' + WEEKDAYS.map(function(w, i){
       return '<div class="' + (i === 0 ? "sun" : i === 6 ? "sat" : "") + '">' + w + "</div>";
