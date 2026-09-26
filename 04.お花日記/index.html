@@ -247,16 +247,14 @@
     transform:translateX(-50%);
     color:#ffb3c7;
   }
-  /* 満月の日の🌕（写真がある日は出さない） */
+  /* 満月の日の🌕（右上に小さく。写真がある日は出さない） */
   .day .moon{
     position:absolute;
-    left:50%;top:56%;
-    transform:translate(-50%,-50%);
-    font-size:20px;
+    right:3px;top:3px;
+    font-size:12px;
     line-height:1;
     pointer-events:none;
   }
-  .day .moon.small{left:auto;right:3px;top:3px;transform:none;font-size:12px}
   .day.out{opacity:.35}
   .day.today{background:var(--accent-soft)}
   .day.today .n{background:var(--accent);color:#fff}
@@ -1377,7 +1375,7 @@
 <button class="update-bar" id="updateBar">🌸 新しいバージョンがあります（タップで更新）</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="hanakotoba.js?v=2026-09-26-5"></script>
+<script src="hanakotoba.js?v=2026-09-26-6"></script>
 <script>
 (function(){
   "use strict";
@@ -1607,7 +1605,7 @@
           inner += '<img src="' + urlOf(e.photos[0].thumb) + '" alt="">';
         }else if(e){
           inner += '<svg class="mini"><use href="#i-flower"/></svg>';
-          if(isFullMoon(key)) inner += '<span class="moon small" aria-label="満月">🌕</span>';
+          if(isFullMoon(key)) inner += '<span class="moon" aria-label="満月">🌕</span>';
         }else if(isFullMoon(key)){
           inner += '<span class="moon" aria-label="満月">🌕</span>';
         }
@@ -2472,7 +2470,7 @@
   // version.json だけはキャッシュせずに取りにいき、版が違えば「?v=新しい版」付きのURLで開き直して、
   // 覚えている古いページを使わずに新しい版を読み込む。
   // ※ 更新するときは APP_VERSION と version.json の両方を同じ値に書き換える
-  var APP_VERSION = "2026-09-26-5";
+  var APP_VERSION = "2026-09-26-6";
   $("appVersion").textContent = "バージョン " + APP_VERSION;
   var newVersion = null;
   function reloadTo(v){ location.replace(location.pathname + "?v=" + encodeURIComponent(v)); }
