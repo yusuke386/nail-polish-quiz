@@ -1534,7 +1534,11 @@
       return;
     }
     var day = ev.target.closest(".day");
-    if(day && day.dataset.date <= todayIso()) selectDay(day.dataset.date);
+    // 日付をタップしたら、その日を選んでそのまま記録画面（記録があれば編集）を開く
+    if(day && day.dataset.date <= todayIso()){
+      selectDay(day.dataset.date);
+      openForm(day.dataset.date);
+    }
   });
   $("mPrev").addEventListener("click", function(){ viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1); renderMonth(); });
   $("mNext").addEventListener("click", function(){ viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1); renderMonth(); });
